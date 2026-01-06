@@ -28,22 +28,7 @@ builder.Services.AddProblemDetails(options =>
 });
 
 builder.AddNpgsqlDbContext<OpenPlateContext>(
-    connectionName: "postgresdb",
-    configureDbContextOptions: options =>
-    {
-        if (builder.Environment.IsDevelopment())
-        {
-            options.UseSeeding((context, _) =>
-            {
-                SeedPlate.Seed((OpenPlateContext)context);
-            });
-
-            options.UseAsyncSeeding(async (context, _, cancellationToken) =>
-            {
-                await SeedPlate.SeedAsync((OpenPlateContext)context, cancellationToken);
-            });
-        }
-    });
+    connectionName: "postgresdb");
 
 builder.Services.AddValidatorsFromAssemblyContaining<WebApplication>();
 

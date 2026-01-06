@@ -17,7 +17,6 @@ public class Plate
     public PlateColorEnum Color { get; set; }
     public PlateSkirtEnum Skirt { get; set; }
     public bool Sterile { get; set; }
-    public PlateVolume Volume { get; set; } = new PlateVolume();
 
     // Foreign key
     public Guid ManufacturerId { get; set; }

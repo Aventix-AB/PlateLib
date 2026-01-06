@@ -29,12 +29,6 @@ public static class SeedPlate
             Color = PlateColorEnum.Clear,
             Skirt = PlateSkirtEnum.FullSkirt,
             Sterile = false,
-            Volume = new PlateVolume
-            {
-                Volume = 382,
-                MinWorkingVolume = 25,
-                MaxWorkingVolume = 340
-            },
             ManufacturerId = manufacturerId
         };
     }
