@@ -1,6 +1,6 @@
 ---
 description: "Use when working on backend code: API endpoints, repositories, EF Core entities, DTOs, database migrations, or FluentValidation. Covers vertical slice conventions, data layer patterns, and PlateLib API structure."
-applyTo: "API/**,Data/**,Common/**,MigrationService/**"
+applyTo: "API/**,Data/**,Common/**,MigrationService/**,Tests/PlateLib.UnitTests/**,Tests/PlateLib.IntegrationTests/**"
 ---
 # Backend Guidelines
 
@@ -12,6 +12,8 @@ applyTo: "API/**,Data/**,Common/**,MigrationService/**"
 | `Common` | Shared DTOs, interfaces, enums, models — no dependencies on Data or API |
 | `Data` | EF Core entities, DbContext, repositories, migrations, seeding |
 | `MigrationService` | Standalone migration runner for production deployments |
+| `Tests/PlateLib.UnitTests` | xUnit unit tests for business logic, common helpers, and feature slice logic |
+| `Tests/PlateLib.IntegrationTests` | xUnit integration tests using Aspire's `DistributedApplicationTestingBuilder` |
 
 ## Endpoint Conventions (Vertical Slices)
 
@@ -69,3 +71,43 @@ Use FluentValidation for all request models. Validators are auto-registered via 
 ## OpenAPI / Scalar
 
 API docs are served at `/api` via Scalar. Annotate endpoints with `.WithSummary()` and `.WithDescription()` for useful documentation. Always assign `.WithTags(...)` to group endpoints logically.
+
+## Testing
+
+### Unit Tests (`Tests/PlateLib.UnitTests`)
+
+- **All business logic and common helper functions must have unit tests.**
+- Mirror the feature slice structure: test files live in `Tests/PlateLib.UnitTests/Features/<Feature>/` and `Tests/PlateLib.UnitTests/Common/`.
+- Use **NSubstitute** for mocking dependencies (e.g., `IPlateRepository`).
+- Use **FluentAssertions** for readable assertions.
+- Test validators, mapping logic (`MapToDTO`), and any helper/utility functions in `Common`.
+- Run with: `dotnet test Tests/PlateLib.UnitTests`
+
+### Integration Tests (`Tests/PlateLib.IntegrationTests`)
+
+- **Every new feature must have minimal integration tests covering the most critical HTTP behaviour** (happy path + key error cases like 404 or 400).
+- Use `DistributedApplicationTestingBuilder.CreateAsync<Projects.AppHost>()` to spin up the full Aspire application.
+- Obtain a typed `HttpClient` via `app.CreateHttpClient("api")`.
+- Mirror the feature slice structure: test files live in `Tests/PlateLib.IntegrationTests/Features/<Feature>/`.
+- Integration tests require Docker (PostgreSQL container started by Aspire).
+- Run with: `dotnet test Tests/PlateLib.IntegrationTests`
+
+Example integration test pattern:
+```csharp
+public class PlatesApiTests
+{
+    [Fact]
+    public async Task GetPlates_ReturnsOk()
+    {
+        var appHost = await DistributedApplicationTestingBuilder
+            .CreateAsync<Projects.AppHost>();
+        await using var app = await appHost.BuildAsync();
+        await app.StartAsync();
+
+        var client = app.CreateHttpClient("api");
+        var response = await client.GetAsync("/api/plates");
+
+        response.EnsureSuccessStatusCode();
+    }
+}
+```

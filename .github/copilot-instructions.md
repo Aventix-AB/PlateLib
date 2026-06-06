@@ -9,8 +9,7 @@ PlateLib is an open-source microwell plate library. It serves as a reference cat
 ```
 PlateLib/
 ├── API/            # ASP.NET Core Minimal API — vertical slice endpoints
-├── Common/         # Shared DTOs, models, enums, interfaces
-├── Data/           # EF Core data layer — entities, repositories, migrations
+├── Data/           # EF Core data layer — entities, migrations
 ├── MigrationService/ # Database migration runner
 ├── AppHost/        # .NET Aspire orchestration
 ├── ServiceDefaults/ # Shared Aspire service configuration
@@ -24,7 +23,6 @@ PlateLib/
 - **Plate**: A microwell plate identified by catalog number, well count, material, color, skirt type, lid, and sterility. Belongs to a Manufacturer.
 - **Manufacturer**: The company producing the plate (e.g., Corning, Thermo Fisher).
 - **PlateFile**: A binary attachment to a plate (PDF engineering drawing, datasheet, etc.), stored as `bytea` in PostgreSQL.
-- **PlateVolume**: Volume metadata associated with plate wells (in `Common/Models`).
 
 ## Tech Stack
 
