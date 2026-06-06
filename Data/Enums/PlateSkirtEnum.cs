@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Common.Enums;
+namespace Data.Enums;
 
 [JsonConverter(typeof(JsonStringEnumConverter<PlateSkirtEnum>))]
 public enum PlateSkirtEnum

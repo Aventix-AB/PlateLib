@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using Common.Enums;
-using Common.Models;
 using Data.Configurations;
+using Data.Enums;
 
 namespace Data.Entities;
 

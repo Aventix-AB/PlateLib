@@ -1,6 +1,5 @@
 using Data.Entities;
-using Common.Enums;
-using Common.Models;
+using Data.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Data.Seeding;
