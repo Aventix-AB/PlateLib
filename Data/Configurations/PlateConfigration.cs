@@ -14,8 +14,13 @@ public class PlateConfiguration : IEntityTypeConfiguration<Plate>
             .IsRequired()
             .HasMaxLength(200);
 
-        entity.HasIndex(e => e.ManufacturerId);
+        entity.Property(e => e.CatalogNumber)
+            .IsRequired()
+            .HasMaxLength(100);
 
-        // Relationship configured in ManufacturerConfiguration
+        entity.HasIndex(e => e.ManufacturerId);
+        entity.HasIndex(e => e.MaterialId);
+
+        // Relationships configured in ManufacturerConfiguration and MaterialConfiguration
     }
 }

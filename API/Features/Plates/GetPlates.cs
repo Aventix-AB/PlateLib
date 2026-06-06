@@ -1,22 +1,21 @@
-using Data.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Features.Plates;
 
 public static class GetPlates
 {
+    public record MaterialResponse(string Code, string Name);
+    public record PlatePropertyResponse(string Name, string Value);
+
     public record PlateResponse(
         Guid Id,
         string Name,
         string CatalogNumber,
-        int WellNumber,
-        PlateMaterialEnum Material,
-        bool Lid,
-        PlateColorEnum Color,
-        PlateSkirtEnum Skirt,
-        bool Sterile,
+        int WellCount,
+        MaterialResponse Material,
         Guid ManufacturerId,
-        string ManufacturerName);
+        string ManufacturerName,
+        List<PlatePropertyResponse> Properties);
 
     public static IEndpointRouteBuilder MapGetPlates(this IEndpointRouteBuilder app)
     {
@@ -32,19 +31,22 @@ public static class GetPlates
     {
         var plates = await db.Plates
             .Include(p => p.Manufacturer)
+            .Include(p => p.Material)
+            .Include(p => p.PlateProperties)
+                .ThenInclude(pp => pp.PropertyDefinition)
             .OrderBy(p => p.Name)
             .Select(p => new PlateResponse(
                 p.Id,
                 p.Name,
                 p.CatalogNumber,
-                p.Wellnumber,
-                p.Material,
-                p.Lid,
-                p.Color,
-                p.Skirt,
-                p.Sterile,
+                p.WellCount,
+                new MaterialResponse(p.Material.Code, p.Material.Name),
                 p.ManufacturerId,
-                p.Manufacturer.Name))
+                p.Manufacturer.Name,
+                p.PlateProperties
+                    .OrderBy(pp => pp.PropertyDefinition.Name)
+                    .Select(pp => new PlatePropertyResponse(pp.PropertyDefinition.Name, pp.Value))
+                    .ToList()))
             .ToListAsync(ct);
 
         return Results.Ok(plates);

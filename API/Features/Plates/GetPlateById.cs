@@ -1,4 +1,3 @@
-using Data.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Features.Plates;
@@ -6,19 +5,18 @@ namespace API.Features.Plates;
 public static class GetPlateById
 {
     public record PlateFileResponse(Guid Id, string FileName, string ContentType);
+    public record MaterialResponse(string Code, string Name);
+    public record PlatePropertyResponse(string Name, string Value);
 
     public record PlateResponse(
         Guid Id,
         string Name,
         string CatalogNumber,
-        int WellNumber,
-        PlateMaterialEnum Material,
-        bool Lid,
-        PlateColorEnum Color,
-        PlateSkirtEnum Skirt,
-        bool Sterile,
+        int WellCount,
+        MaterialResponse Material,
         Guid ManufacturerId,
         string ManufacturerName,
+        List<PlatePropertyResponse> Properties,
         List<PlateFileResponse> PlateFiles);
 
     public static IEndpointRouteBuilder MapGetPlateById(this IEndpointRouteBuilder app)
@@ -35,6 +33,9 @@ public static class GetPlateById
     {
         var plate = await db.Plates
             .Include(p => p.Manufacturer)
+            .Include(p => p.Material)
+            .Include(p => p.PlateProperties)
+                .ThenInclude(pp => pp.PropertyDefinition)
             .Include(p => p.PlateFiles)
             .FirstOrDefaultAsync(p => p.Id == id, ct);
 
@@ -45,15 +46,17 @@ public static class GetPlateById
             plate.Id,
             plate.Name,
             plate.CatalogNumber,
-            plate.Wellnumber,
-            plate.Material,
-            plate.Lid,
-            plate.Color,
-            plate.Skirt,
-            plate.Sterile,
+            plate.WellCount,
+            new MaterialResponse(plate.Material.Code, plate.Material.Name),
             plate.ManufacturerId,
             plate.Manufacturer.Name,
-            plate.PlateFiles.Select(f => new PlateFileResponse(f.Id, f.FileName, f.ContentType)).ToList());
+            plate.PlateProperties
+                .OrderBy(pp => pp.PropertyDefinition.Name)
+                .Select(pp => new PlatePropertyResponse(pp.PropertyDefinition.Name, pp.Value))
+                .ToList(),
+            plate.PlateFiles
+                .Select(f => new PlateFileResponse(f.Id, f.FileName, f.ContentType))
+                .ToList());
 
         return Results.Ok(response);
     }
