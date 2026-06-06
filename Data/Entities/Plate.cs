@@ -18,6 +18,6 @@ public class Plate
     // Navigation properties
     public Manufacturer Manufacturer { get; set; } = null!;
     public Material Material { get; set; } = null!;
-    public ICollection<PlateFile> PlateFiles { get; set; } = new List<PlateFile>();
+    public ICollection<File> Files { get; set; } = new List<File>();
     public ICollection<PlateProperty> PlateProperties { get; set; } = new List<PlateProperty>();
 }

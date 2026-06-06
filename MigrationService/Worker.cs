@@ -6,6 +6,7 @@ namespace MigrationService;
 
 public class Worker(
     IServiceProvider serviceProvider,
+    IHostEnvironment hostEnvironment,
     IHostApplicationLifetime hostApplicationLifetime) : BackgroundService
 {
     public const string ActivitySourceName = "Migrations";
@@ -20,10 +21,12 @@ public class Worker(
         try
         {
             using var scope = serviceProvider.CreateScope();
-            var dbContext = scope.ServiceProvider.GetRequiredService<OpenPlateContext>();
+            var dbContext = scope.ServiceProvider.GetRequiredService<PlateLibContext>();
 
             await RunMigrationAsync(dbContext, cancellationToken);
-            await SeedDataAsync(dbContext, cancellationToken);
+
+            if (hostEnvironment.IsDevelopment())
+                await SeedDataAsync(dbContext, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -35,23 +38,21 @@ public class Worker(
     }
 
     private static async Task RunMigrationAsync(
-        OpenPlateContext dbContext, CancellationToken cancellationToken)
+        PlateLibContext dbContext, CancellationToken cancellationToken)
     {
         var strategy = dbContext.Database.CreateExecutionStrategy();
         await strategy.ExecuteAsync(async () =>
         {
-            // Run migration in a transaction to avoid partial migration if it fails.
             await dbContext.Database.MigrateAsync(cancellationToken);
         });
     }
 
     private static async Task SeedDataAsync(
-        OpenPlateContext dbContext, CancellationToken cancellationToken)
+        PlateLibContext dbContext, CancellationToken cancellationToken)
     {
         var strategy = dbContext.Database.CreateExecutionStrategy();
         await strategy.ExecuteAsync(async () =>
         {
-            // Seed the database
             await using var transaction = await dbContext.Database
                 .BeginTransactionAsync(cancellationToken);
 

@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
+using API.Features.Files;
 using API.Features.Manufacturers;
 using API.Features.Materials;
-using API.Features.PlateFiles;
 using API.Features.Plates;
 using API.Features.PropertyDefinitions;
 using FluentValidation;
@@ -31,7 +31,7 @@ builder.Services.AddProblemDetails(options =>
   };
 });
 
-builder.AddNpgsqlDbContext<OpenPlateContext>(
+builder.AddNpgsqlDbContext<PlateLibContext>(
     connectionName: "postgresdb");
 
 builder.Services.AddValidatorsFromAssemblyContaining<WebApplication>();
@@ -59,7 +59,7 @@ if (app.Environment.IsDevelopment())
     // Ensure database is created and seeded
     using (var scope = app.Services.CreateScope())
     {
-        var context = scope.ServiceProvider.GetRequiredService<OpenPlateContext>();
+        var context = scope.ServiceProvider.GetRequiredService<PlateLibContext>();
         await context.Database.EnsureCreatedAsync();
     }
 }
@@ -81,7 +81,8 @@ app.MapGetPlates();
 app.MapGetPlateById();
 app.MapGetManufacturers();
 app.MapGetManufacturerById();
-app.MapGetPlateFiles();
+app.MapGetFilesForPlate();
+app.MapDownloadFile();
 app.MapGetMaterials();
 app.MapGetPropertyDefinitions();
 

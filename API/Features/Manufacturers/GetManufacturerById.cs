@@ -16,7 +16,7 @@ public static class GetManufacturerById
         return app;
     }
 
-    private static async Task<IResult> Handle(Guid id, OpenPlateContext db, CancellationToken ct)
+    private static async Task<IResult> Handle(Guid id, PlateLibContext db, CancellationToken ct)
     {
         var manufacturer = await db.Manufacturers
             .FirstOrDefaultAsync(m => m.Id == id, ct);

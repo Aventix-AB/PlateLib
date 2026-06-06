@@ -1,15 +1,16 @@
 using Microsoft.EntityFrameworkCore;
 using Data.Entities;
+using LibFile = Data.Entities.File;
 
-public class OpenPlateContext : DbContext
+public class PlateLibContext : DbContext
 {
-    public OpenPlateContext(DbContextOptions<OpenPlateContext> options) : base(options)
+    public PlateLibContext(DbContextOptions<PlateLibContext> options) : base(options)
     {
     }
 
     public DbSet<Manufacturer> Manufacturers { get; set; }
     public DbSet<Plate> Plates { get; set; }
-    public DbSet<PlateFile> PlateFiles { get; set; }
+    public DbSet<LibFile> Files { get; set; }
     public DbSet<Material> Materials { get; set; }
     public DbSet<PropertyDefinition> PropertyDefinitions { get; set; }
     public DbSet<PlateProperty> PlateProperties { get; set; }

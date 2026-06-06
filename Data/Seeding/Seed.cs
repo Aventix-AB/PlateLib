@@ -20,14 +20,14 @@ public static class SeedPlate
         ("Lid",       PropertyDataType.Boolean, "Whether the plate ships with a lid."),
     ];
 
-    public static async Task SeedAsync(OpenPlateContext context, CancellationToken cancellationToken = default)
+    public static async Task SeedAsync(PlateLibContext context, CancellationToken cancellationToken = default)
     {
         await SeedMaterialsAsync(context, cancellationToken);
         await SeedPropertyDefinitionsAsync(context, cancellationToken);
         await SeedManufacturerAndPlateAsync(context, cancellationToken);
     }
 
-    private static async Task SeedMaterialsAsync(OpenPlateContext context, CancellationToken ct)
+    private static async Task SeedMaterialsAsync(PlateLibContext context, CancellationToken ct)
     {
         foreach (var (code, name, description) in MaterialSeedData)
         {
@@ -45,7 +45,7 @@ public static class SeedPlate
         await context.SaveChangesAsync(ct);
     }
 
-    private static async Task SeedPropertyDefinitionsAsync(OpenPlateContext context, CancellationToken ct)
+    private static async Task SeedPropertyDefinitionsAsync(PlateLibContext context, CancellationToken ct)
     {
         foreach (var (name, dataType, description) in PropertyDefinitionSeedData)
         {
@@ -63,7 +63,7 @@ public static class SeedPlate
         await context.SaveChangesAsync(ct);
     }
 
-    private static async Task SeedManufacturerAndPlateAsync(OpenPlateContext context, CancellationToken ct)
+    private static async Task SeedManufacturerAndPlateAsync(PlateLibContext context, CancellationToken ct)
     {
         var manufacturer = await context.Manufacturers.FirstOrDefaultAsync(m => m.Name == "Greiner", ct);
         if (manufacturer is null)

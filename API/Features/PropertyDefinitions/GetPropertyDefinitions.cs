@@ -17,7 +17,7 @@ public static class GetPropertyDefinitions
         return app;
     }
 
-    private static async Task<IResult> Handle(OpenPlateContext db, CancellationToken ct)
+    private static async Task<IResult> Handle(PlateLibContext db, CancellationToken ct)
     {
         var definitions = await db.PropertyDefinitions
             .OrderBy(d => d.Name)

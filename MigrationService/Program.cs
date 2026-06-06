@@ -8,7 +8,7 @@ builder.Services.AddHostedService<Worker>();
 builder.Services.AddOpenTelemetry()
     .WithTracing(tracing => tracing.AddSource(Worker.ActivitySourceName));
 
-builder.AddNpgsqlDbContext<OpenPlateContext>(
+builder.AddNpgsqlDbContext<PlateLibContext>(
     connectionName: "postgresdb");
 
 var host = builder.Build();

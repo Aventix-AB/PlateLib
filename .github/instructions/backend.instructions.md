@@ -58,7 +58,43 @@ public static class PlateEndpoints
 2. Add corresponding property to `Common/DTOs/PlateDTO.cs`
 3. Update `PlateRepository.MapToDTO()`
 4. Add/update EF configuration in `Data/Configurations/PlateConfiguration.cs`
-5. Create a new migration: `dotnet ef migrations add <MigrationName> --project Data --startup-project MigrationService`
+5. Create a new migration (see below)
+
+## Creating Migrations
+
+Migrations are managed via the `Data` project. There is **no design-time factory** — migrations must be created with the Aspire stack running so EF Core can reach the database.
+
+### Steps to add a migration
+
+1. Start the Aspire AppHost so PostgreSQL is available:
+   ```bash
+   dotnet run --project AppHost
+   ```
+
+2. In a second terminal, run `dotnet ef` targeting the `Data` project with `MigrationService` as startup project:
+   ```bash
+   dotnet ef migrations add <MigrationName> \
+     --project Data \
+     --startup-project MigrationService \
+     --context PlateLibContext
+   ```
+   Example:
+   ```bash
+   dotnet ef migrations add AddPlateColor \
+     --project Data \
+     --startup-project MigrationService \
+     --context PlateLibContext
+   ```
+
+3. Review the generated migration in `Data/Migrations/` before committing.
+
+### Migration naming conventions
+- Use PascalCase descriptive names: `AddPlateColor`, `AddManufacturerLogo`, `RefactorFilesToStoredFile`
+- Migration files are prefixed with a timestamp: `20260606175400_<Name>.cs`
+
+### Seeding
+- Seed data lives in `Data/Seeding/Seed.cs` and is **only run in the Development environment** (controlled in `MigrationService/Worker.cs`).
+- Migrations always run in all environments; seeding never runs in production.
 
 ## Enums
 
@@ -71,6 +107,11 @@ Use FluentValidation for all request models. Validators are auto-registered via 
 ## OpenAPI / Scalar
 
 API docs are served at `/api` via Scalar. Annotate endpoints with `.WithSummary()` and `.WithDescription()` for useful documentation. Always assign `.WithTags(...)` to group endpoints logically.
+
+**OpenAPI annotations directly drive TypeScript type generation on the frontend** — when `pnpm generate:api` is run, the TypeScript schema is generated from these annotations. This means:
+- Endpoint summaries and descriptions improve auto-complete in the frontend client.
+- All response types must be explicitly declared (use `TypedResults` or `Produces<T>`) so that `openapi-typescript` can generate accurate TypeScript interfaces.
+- Prefer `TypedResults.Ok<T>(...)` over untyped `Results.Ok(...)` to ensure response types appear correctly in the generated schema.
 
 ## Testing
 

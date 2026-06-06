@@ -16,7 +16,7 @@ public static class GetManufacturers
         return app;
     }
 
-    private static async Task<IResult> Handle(OpenPlateContext db, CancellationToken ct)
+    private static async Task<IResult> Handle(PlateLibContext db, CancellationToken ct)
     {
         var manufacturers = await db.Manufacturers
             .OrderBy(m => m.Name)

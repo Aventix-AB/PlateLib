@@ -4,7 +4,7 @@ namespace API.Features.Plates;
 
 public static class GetPlateById
 {
-    public record PlateFileResponse(Guid Id, string FileName, string ContentType);
+    public record FileResponse(Guid Id, string FileName, string ContentType);
     public record MaterialResponse(string Code, string Name);
     public record PlatePropertyResponse(string Name, string Value);
 
@@ -17,7 +17,7 @@ public static class GetPlateById
         Guid ManufacturerId,
         string ManufacturerName,
         List<PlatePropertyResponse> Properties,
-        List<PlateFileResponse> PlateFiles);
+        List<FileResponse> Files);
 
     public static IEndpointRouteBuilder MapGetPlateById(this IEndpointRouteBuilder app)
     {
@@ -29,14 +29,14 @@ public static class GetPlateById
         return app;
     }
 
-    private static async Task<IResult> Handle(Guid id, OpenPlateContext db, CancellationToken ct)
+    private static async Task<IResult> Handle(Guid id, PlateLibContext db, CancellationToken ct)
     {
         var plate = await db.Plates
             .Include(p => p.Manufacturer)
             .Include(p => p.Material)
             .Include(p => p.PlateProperties)
                 .ThenInclude(pp => pp.PropertyDefinition)
-            .Include(p => p.PlateFiles)
+            .Include(p => p.Files)
             .FirstOrDefaultAsync(p => p.Id == id, ct);
 
         if (plate is null)
@@ -54,8 +54,8 @@ public static class GetPlateById
                 .OrderBy(pp => pp.PropertyDefinition.Name)
                 .Select(pp => new PlatePropertyResponse(pp.PropertyDefinition.Name, pp.Value))
                 .ToList(),
-            plate.PlateFiles
-                .Select(f => new PlateFileResponse(f.Id, f.FileName, f.ContentType))
+            plate.Files
+                .Select(f => new FileResponse(f.Id, f.FileName, f.ContentType))
                 .ToList());
 
         return Results.Ok(response);
