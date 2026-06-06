@@ -1,8 +1,12 @@
 using System.Text.Json.Serialization;
+using API.Features.Manufacturers;
+using API.Features.Materials;
+using API.Features.PlateFiles;
+using API.Features.Plates;
+using API.Features.PropertyDefinitions;
 using FluentValidation;
 using Microsoft.AspNetCore.Http.Features;
 using Scalar.AspNetCore;
-using Data.Seeding;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -72,4 +76,14 @@ app.MapDefaultEndpoints();
 
 app.UseHttpsRedirection();
 
+// Register feature endpoints
+app.MapGetPlates();
+app.MapGetPlateById();
+app.MapGetManufacturers();
+app.MapGetManufacturerById();
+app.MapGetPlateFiles();
+app.MapGetMaterials();
+app.MapGetPropertyDefinitions();
+
 app.Run();
+
