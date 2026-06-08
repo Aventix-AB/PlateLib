@@ -75,8 +75,12 @@ const { data, isLoading } = $api.useQuery('get', '/api/plates', {
 - Follow shadcn/ui conventions: components in `src/components/ui/` are low-level primitives; feature components compose them.
 - Use `cn()` (from `src/lib/`) to conditionally merge Tailwind classes.
 - Prefer Radix UI primitives for accessible interactive elements (Select, Switch, Slider, Label).
-- Use `lucide-react` for icons.
+- Use `lucide-react` for all icons — UI/action icons and social/external icons alike (e.g., `Github`, `Globe`, `Mail`).
+- Use `react-icons` only if a specific brand icon is not available in lucide-react.
 
+## Branding
+
+PlateLib is an open-source project built and hosted by **Aventix**. Keep Aventix branding minimal and secondary to PlateLib's own identity.
 ## Plate Display
 
 The core UI concern is helping users discover and compare well plates:
