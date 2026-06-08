@@ -1,0 +1,409 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "API | v1",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/plates": {
+      "get": {
+        "tags": [
+          "Plates"
+        ],
+        "summary": "Get plates with optional filtering and pagination",
+        "description": "Returns a paged list of plates. Supports filtering by search text (name/catalog number), manufacturer, and well count.",
+        "operationId": "GetPlates",
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "manufacturerId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "wellCount",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageIndex",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 25
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Plates"
+        ],
+        "summary": "Create a new plate",
+        "description": "Creates a new plate entry in the catalog. Requires maintainer authorization.",
+        "operationId": "CreatePlate",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePlateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/plates/{id}": {
+      "get": {
+        "tags": [
+          "Plates"
+        ],
+        "summary": "Get a plate by ID",
+        "operationId": "GetPlateById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/manufacturers": {
+      "get": {
+        "tags": [
+          "Manufacturers"
+        ],
+        "summary": "Get all manufacturers",
+        "operationId": "GetManufacturers",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Manufacturers"
+        ],
+        "summary": "Create a new manufacturer",
+        "description": "Adds a new manufacturer to the catalog. Requires maintainer authorization.",
+        "operationId": "CreateManufacturer",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateManufacturerRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/manufacturers/{id}": {
+      "get": {
+        "tags": [
+          "Manufacturers"
+        ],
+        "summary": "Get a manufacturer by ID",
+        "operationId": "GetManufacturerById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/plates/{plateId}/files": {
+      "get": {
+        "tags": [
+          "Files"
+        ],
+        "summary": "Get all files attached to a plate",
+        "operationId": "GetFilesForPlate",
+        "parameters": [
+          {
+            "name": "plateId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Files"
+        ],
+        "summary": "Upload a file and attach it to a plate",
+        "description": "Uploads a file to blob storage and links it to the specified plate. Requires maintainer authorization.",
+        "operationId": "UploadFile",
+        "parameters": [
+          {
+            "name": "plateId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "file"
+                ],
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/files/{id}/download": {
+      "get": {
+        "tags": [
+          "Files"
+        ],
+        "summary": "Download a file by ID",
+        "description": "Redirects to a short-lived pre-signed URL for direct download from blob storage.",
+        "operationId": "DownloadFile",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/plates/{plateId}/files/{fileId}": {
+      "delete": {
+        "tags": [
+          "Files"
+        ],
+        "summary": "Remove a file from a plate and delete it from storage",
+        "description": "Detaches the file from the plate. If the file has no remaining plate associations it is permanently deleted from blob storage. Requires maintainer authorization.",
+        "operationId": "DeleteFile",
+        "parameters": [
+          {
+            "name": "plateId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "fileId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/materials": {
+      "get": {
+        "tags": [
+          "Materials"
+        ],
+        "summary": "Get all plate materials",
+        "operationId": "GetMaterials",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/property-definitions": {
+      "get": {
+        "tags": [
+          "PropertyDefinitions"
+        ],
+        "summary": "Get all plate property definitions",
+        "operationId": "GetPropertyDefinitions",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CreateManufacturerRequest": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "CreatePlateRequest": {
+        "required": [
+          "name",
+          "catalogNumber",
+          "wellCount",
+          "manufacturerId",
+          "materialId",
+          "properties"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "catalogNumber": {
+            "type": "string"
+          },
+          "wellCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "manufacturerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "materialId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "properties": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "IFormFile": {
+        "type": "string",
+        "format": "binary"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Plates"
+    },
+    {
+      "name": "Manufacturers"
+    },
+    {
+      "name": "Files"
+    },
+    {
+      "name": "Materials"
+    },
+    {
+      "name": "PropertyDefinitions"
+    }
+  ]
+}
