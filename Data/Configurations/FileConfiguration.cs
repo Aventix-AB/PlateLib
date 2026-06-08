@@ -28,7 +28,6 @@ public class FileConfiguration : IEntityTypeConfiguration<LibFile>
         // Many-to-many: a file can be attached to multiple plates;
         // a plate can reference multiple files.
         entity.HasMany(f => f.Plates)
-            .WithMany(p => p.Files)
-            .UsingEntity(j => j.ToTable("PlateFiles"));
+            .WithMany(p => p.Files);
     }
 }
