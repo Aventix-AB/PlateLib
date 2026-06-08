@@ -29,7 +29,6 @@ public class S3StorageService(IAmazonS3 s3, IOptions<StorageOptions> options) : 
             Key = key,
             InputStream = content,
             ContentType = contentType,
-            DisablePayloadSigning = true,
         };
 
         await s3.PutObjectAsync(request, ct);

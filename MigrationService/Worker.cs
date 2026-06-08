@@ -105,7 +105,6 @@ public class Worker(
             Key = storageKey,
             InputStream = new MemoryStream(pdfContent),
             ContentType = "application/pdf",
-            DisablePayloadSigning = true,
         }, cancellationToken);
 
         var seededFile = new LibFile
