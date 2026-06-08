@@ -1,24 +1,15 @@
 using System.Net;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using Aspire.Hosting.Testing;
 
 namespace PlateLib.IntegrationTests.Features.Plates;
 
-public class CreatePlateApiTests
+[Collection(AspireAppCollection.CollectionName)]
+public class CreatePlateApiTests(AspireAppFixture fixture)
 {
-    private const string DevApiKey = "dev-secret-key-change-me";
-
     [Fact]
     public async Task CreatePlate_WithoutAuth_ReturnsUnauthorized()
     {
-        var appHost = await DistributedApplicationTestingBuilder
-            .CreateAsync<Projects.AppHost>();
-
-        await using var app = await appHost.BuildAsync();
-        await app.StartAsync();
-
-        var client = app.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
 
         var response = await client.PostAsJsonAsync("/api/plates", new
         {
@@ -35,14 +26,7 @@ public class CreatePlateApiTests
     [Fact]
     public async Task CreatePlate_WithAuth_InvalidBody_ReturnsBadRequest()
     {
-        var appHost = await DistributedApplicationTestingBuilder
-            .CreateAsync<Projects.AppHost>();
-
-        await using var app = await appHost.BuildAsync();
-        await app.StartAsync();
-
-        var client = app.CreateHttpClient("api");
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", DevApiKey);
+        var client = fixture.CreateMaintainerClient();
 
         // wellCount 0 is invalid
         var response = await client.PostAsJsonAsync("/api/plates", new
@@ -60,14 +44,7 @@ public class CreatePlateApiTests
     [Fact]
     public async Task CreatePlate_WithAuth_UnknownManufacturer_ReturnsUnprocessableEntity()
     {
-        var appHost = await DistributedApplicationTestingBuilder
-            .CreateAsync<Projects.AppHost>();
-
-        await using var app = await appHost.BuildAsync();
-        await app.StartAsync();
-
-        var client = app.CreateHttpClient("api");
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", DevApiKey);
+        var client = fixture.CreateMaintainerClient();
 
         var response = await client.PostAsJsonAsync("/api/plates", new
         {
@@ -81,3 +58,4 @@ public class CreatePlateApiTests
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
     }
 }
+

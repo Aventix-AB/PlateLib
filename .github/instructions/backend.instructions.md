@@ -186,28 +186,39 @@ API docs are served at `/api` via Scalar. Annotate endpoints with `.WithSummary(
 ### Integration Tests (`Tests/PlateLib.IntegrationTests`)
 
 - **Every new feature must have minimal integration tests covering the most critical HTTP behaviour** (happy path + key error cases like 404 or 400).
-- Use `DistributedApplicationTestingBuilder.CreateAsync<Projects.AppHost>()` to spin up the full Aspire application.
-- Obtain a typed `HttpClient` via `app.CreateHttpClient("api")`.
+- Integration tests require Docker
 - Mirror the feature slice structure: test files live in `Tests/PlateLib.IntegrationTests/Features/<Feature>/`.
-- Integration tests require Docker (PostgreSQL container started by Aspire).
 - Run with: `dotnet test Tests/PlateLib.IntegrationTests`
 
-Example integration test pattern:
+#### Shared AppHost fixture (required pattern)
+
+The Aspire AppHost is expensive to start. **All integration tests share a single AppHost instance** via xUnit's `ICollectionFixture`. Never create a `DistributedApplication` inside an individual test.
+
+The fixture is defined in `Tests/PlateLib.IntegrationTests/AspireAppFixture.cs`. It configures an HTTP resilience handler, starts the app, and waits for the `"api"` resource to be healthy before any test runs:
+
+#### Test class pattern
+
+Decorate every integration test class with `[Collection(AspireAppCollection.CollectionName)]` and inject `AspireAppFixture` via the primary constructor. Use `fixture.CreateApiClient()` to get a fresh client per test — pass the dev API key for authenticated tests.
+
+Each test must be **self-contained and isolated** — use `Guid.NewGuid()` to generate unique names/IDs so tests do not interfere with shared database state.
+
 ```csharp
-public class PlatesApiTests
+[Collection(AspireAppCollection.CollectionName)]
+public class PlatesApiTests(AspireAppFixture fixture)
 {
     [Fact]
     public async Task GetPlates_ReturnsOk()
     {
-        var appHost = await DistributedApplicationTestingBuilder
-            .CreateAsync<Projects.AppHost>();
-        await using var app = await appHost.BuildAsync();
-        await app.StartAsync();
-
-        var client = app.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();            // unauthenticated
         var response = await client.GetAsync("/api/plates");
-
         response.EnsureSuccessStatusCode();
+    }
+
+    [Fact]
+    public async Task CreatePlate_WithAuth_ReturnsCreated()
+    {
+        var client = fixture.CreateMaintainerClient();    // dev bearer token
+        // ...
     }
 }
 ```

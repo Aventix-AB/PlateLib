@@ -1,45 +1,21 @@
-using Aspire.Hosting.Testing;
-using Microsoft.Extensions.DependencyInjection;
-
 namespace PlateLib.IntegrationTests.Features.Plates;
 
-public class PlatesApiTests
+[Collection(AspireAppCollection.CollectionName)]
+public class PlatesApiTests(AspireAppFixture fixture)
 {
     [Fact]
     public async Task GetPlates_ReturnsOk()
     {
-        // Arrange
-        var appHost = await DistributedApplicationTestingBuilder
-            .CreateAsync<Projects.AppHost>();
-
-        await using var app = await appHost.BuildAsync();
-        await app.StartAsync();
-
-        var httpClient = app.CreateHttpClient("api");
-
-        // Act
-        var response = await httpClient.GetAsync("/api/plates");
-
-        // Assert
+        var client = fixture.CreateApiClient();
+        var response = await client.GetAsync("/api/plates");
         response.EnsureSuccessStatusCode();
     }
 
     [Fact]
     public async Task GetPlateById_WithUnknownId_ReturnsNotFound()
     {
-        // Arrange
-        var appHost = await DistributedApplicationTestingBuilder
-            .CreateAsync<Projects.AppHost>();
-
-        await using var app = await appHost.BuildAsync();
-        await app.StartAsync();
-
-        var httpClient = app.CreateHttpClient("api");
-
-        // Act
-        var response = await httpClient.GetAsync($"/api/plates/{Guid.NewGuid()}");
-
-        // Assert
+        var client = fixture.CreateApiClient();
+        var response = await client.GetAsync($"/api/plates/{Guid.NewGuid()}");
         Assert.Equal(System.Net.HttpStatusCode.NotFound, response.StatusCode);
     }
 }
