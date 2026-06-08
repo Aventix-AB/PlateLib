@@ -18,6 +18,9 @@ public class PlateConfiguration : IEntityTypeConfiguration<Plate>
             .IsRequired()
             .HasMaxLength(100);
 
+        entity.Property(e => e.ThumbnailStorageKey)
+            .HasMaxLength(1024);
+
         entity.HasIndex(e => e.ManufacturerId);
         entity.HasIndex(e => e.MaterialId);
 

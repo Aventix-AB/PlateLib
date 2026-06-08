@@ -26,4 +26,5 @@ public class File
 
     // Navigation properties
     public ICollection<Plate> Plates { get; set; } = new List<Plate>();
+    public ICollection<Manufacturer> Manufacturers { get; set; } = new List<Manufacturer>();
 }

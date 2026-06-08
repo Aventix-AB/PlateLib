@@ -11,6 +11,9 @@ public class Plate
     public required string CatalogNumber { get; set; }
     public int WellCount { get; set; }
 
+    /// <summary>Object key in blob storage for the plate's thumbnail image. Null when no thumbnail has been uploaded.</summary>
+    public string? ThumbnailStorageKey { get; set; }
+
     // Foreign keys
     public Guid ManufacturerId { get; set; }
     public Guid MaterialId { get; set; }

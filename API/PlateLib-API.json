@@ -173,6 +173,141 @@
         }
       }
     },
+    "/api/manufacturers/{id}/thumbnail": {
+      "get": {
+        "tags": [
+          "Manufacturers"
+        ],
+        "summary": "Download the thumbnail for a manufacturer",
+        "description": "Redirects to a short-lived pre-signed URL for direct download of the manufacturer thumbnail from blob storage.",
+        "operationId": "GetManufacturerThumbnail",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Manufacturers"
+        ],
+        "summary": "Upload or replace the thumbnail for a manufacturer",
+        "description": "Uploads a logo/thumbnail image to blob storage and links it to the manufacturer. Replaces any existing thumbnail. Requires maintainer authorization.",
+        "operationId": "UploadManufacturerThumbnail",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "file"
+                ],
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/manufacturers/{manufacturerId}/files": {
+      "get": {
+        "tags": [
+          "Manufacturers"
+        ],
+        "summary": "Get all files attached to a manufacturer",
+        "operationId": "GetFilesForManufacturer",
+        "parameters": [
+          {
+            "name": "manufacturerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Manufacturers"
+        ],
+        "summary": "Upload a file and attach it to a manufacturer",
+        "description": "Uploads a file to blob storage and links it to the specified manufacturer. Requires maintainer authorization.",
+        "operationId": "UploadManufacturerFile",
+        "parameters": [
+          {
+            "name": "manufacturerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "file"
+                ],
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/plates/{plateId}/files": {
       "get": {
         "tags": [
