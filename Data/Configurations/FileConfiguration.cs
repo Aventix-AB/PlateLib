@@ -18,10 +18,12 @@ public class FileConfiguration : IEntityTypeConfiguration<LibFile>
             .IsRequired()
             .HasMaxLength(100);
 
-        // TOAST will automatically compress/chunk large binary content
-        entity.Property(e => e.FileContent)
+        entity.Property(e => e.StorageKey)
             .IsRequired()
-            .HasColumnType("bytea");
+            .HasMaxLength(1024);
+
+        entity.Property(e => e.FileSizeBytes)
+            .IsRequired();
 
         // Many-to-many: a file can be attached to multiple plates;
         // a plate can reference multiple files.

@@ -96,7 +96,66 @@ Migrations are managed via the `Data` project. There is **no design-time factory
 - Seed data lives in `Data/Seeding/Seed.cs` and is **only run in the Development environment** (controlled in `MigrationService/Worker.cs`).
 - Migrations always run in all environments; seeding never runs in production.
 
-## Enums
+## Blob Storage
+
+All file binaries are stored in S3-compatible blob storage (MinIO locally, Hetzner/S3 in production). The `File` entity holds only **metadata** in Postgres — no binary content.
+
+| Field | Purpose |
+|---|---|
+| `StorageKey` | Object key in the bucket, e.g. `plates/{plateId}/{fileId}/drawing.pdf` |
+| `FileSizeBytes` | Stored at upload time; never recalculated from the blob |
+
+The `IStorageService` abstraction lives in `API/Storage/`. Inject it in endpoints — never call `IAmazonS3` directly from endpoints.
+
+```csharp
+// Upload pattern (write endpoint)
+var storageKey = $"plates/{plateId}/{fileId}/{file.FileName}";
+await storage.UploadAsync(storageKey, stream, file.ContentType, ct);
+
+// Download pattern — redirect, do not stream through the API
+var url = await storage.GeneratePresignedUrlAsync(file.StorageKey, TimeSpan.FromMinutes(15), ct);
+return Results.Redirect(url);
+```
+
+**Key naming convention:** `plates/{plateId}/{fileId}/{originalFileName}` — keeps files organized by plate and collision-free.
+
+### Local development
+
+MinIO is added to Aspire AppHost and starts automatically with `dotnet run --project AppHost`. The MigrationService seeds a sample file to MinIO on first run (Development environment only).
+
+- MinIO console: `http://localhost:9001` (user: `minioadmin`, password: `minioadmin`)
+- Storage config is injected by Aspire via `Storage__ServiceUrl`, `Storage__AccessKey`, `Storage__SecretKey` env vars — no manual config needed locally.
+
+### Production configuration
+
+Set via environment variables or secrets (never commit these):
+
+```
+Storage__ServiceUrl=https://<bucket>.your-hetzner-endpoint.com
+Storage__BucketName=platelib
+Storage__AccessKey=<key>
+Storage__SecretKey=<secret>
+Storage__ForcePathStyle=false
+```
+
+## Authentication
+
+Write endpoints (`POST`/`DELETE`) are protected by the `Maintainer` authorization policy. Read endpoints are public.
+
+```csharp
+app.MapPost("/api/plates", Handle)
+    .RequireAuthorization("Maintainer");
+```
+
+The policy uses **JWT Bearer** (WorkOS in production). In development a static API key scheme is enabled (`Auth:AllowDevKey=true` in `appsettings.Development.json`) so maintainer endpoints can be tested without a real OIDC flow:
+
+```
+Authorization: Bearer dev-secret-key-change-me
+```
+
+**Never set `Auth:AllowDevKey=true` in production.** Production requires `Auth:Authority` and `Auth:ClientId` to be set to the WorkOS OIDC values.
+
+
 
 Plate characteristic enums (`PlateMaterialEnum`, `PlateColorEnum`, `PlateSkirtEnum`) live in `Common/Enums`. Store enums as integers in PostgreSQL; use descriptive names in API responses by serializing as strings where appropriate.
 

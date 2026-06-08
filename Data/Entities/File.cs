@@ -18,8 +18,11 @@ public class File
     /// <summary>MIME type (e.g., application/pdf).</summary>
     public string ContentType { get; set; } = string.Empty;
 
-    /// <summary>Binary file content stored as PostgreSQL bytea (TOAST-compressed).</summary>
-    public byte[] FileContent { get; set; } = [];
+    /// <summary>Object key in blob storage (e.g. "plates/{plateId}/{fileId}/drawing.pdf").</summary>
+    public string StorageKey { get; set; } = string.Empty;
+
+    /// <summary>File size in bytes.</summary>
+    public long FileSizeBytes { get; set; }
 
     // Navigation properties
     public ICollection<Plate> Plates { get; set; } = new List<Plate>();
