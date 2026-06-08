@@ -96,7 +96,66 @@ Migrations are managed via the `Data` project. There is **no design-time factory
 - Seed data lives in `Data/Seeding/Seed.cs` and is **only run in the Development environment** (controlled in `MigrationService/Worker.cs`).
 - Migrations always run in all environments; seeding never runs in production.
 
-## Enums
+## Blob Storage
+
+All file binaries are stored in S3-compatible blob storage (MinIO locally, Hetzner/S3 in production). The `File` entity holds only **metadata** in Postgres — no binary content.
+
+| Field | Purpose |
+|---|---|
+| `StorageKey` | Object key in the bucket, e.g. `plates/{plateId}/{fileId}/drawing.pdf` |
+| `FileSizeBytes` | Stored at upload time; never recalculated from the blob |
+
+The `IStorageService` abstraction lives in `API/Storage/`. Inject it in endpoints — never call `IAmazonS3` directly from endpoints.
+
+```csharp
+// Upload pattern (write endpoint)
+var storageKey = $"plates/{plateId}/{fileId}/{file.FileName}";
+await storage.UploadAsync(storageKey, stream, file.ContentType, ct);
+
+// Download pattern — redirect, do not stream through the API
+var url = await storage.GeneratePresignedUrlAsync(file.StorageKey, TimeSpan.FromMinutes(15), ct);
+return Results.Redirect(url);
+```
+
+**Key naming convention:** `plates/{plateId}/{fileId}/{originalFileName}` — keeps files organized by plate and collision-free.
+
+### Local development
+
+MinIO is added to Aspire AppHost and starts automatically with `dotnet run --project AppHost`. The MigrationService seeds a sample file to MinIO on first run (Development environment only).
+
+- MinIO console: `http://localhost:9001` (user: `minioadmin`, password: `minioadmin`)
+- Storage config is injected by Aspire via `Storage__ServiceUrl`, `Storage__AccessKey`, `Storage__SecretKey` env vars — no manual config needed locally.
+
+### Production configuration
+
+Set via environment variables or secrets (never commit these):
+
+```
+Storage__ServiceUrl=https://<bucket>.your-hetzner-endpoint.com
+Storage__BucketName=platelib
+Storage__AccessKey=<key>
+Storage__SecretKey=<secret>
+Storage__ForcePathStyle=false
+```
+
+## Authentication
+
+Write endpoints (`POST`/`DELETE`) are protected by the `Maintainer` authorization policy. Read endpoints are public.
+
+```csharp
+app.MapPost("/api/plates", Handle)
+    .RequireAuthorization("Maintainer");
+```
+
+The policy uses **JWT Bearer** (WorkOS in production). In development a static API key scheme is enabled (`Auth:AllowDevKey=true` in `appsettings.Development.json`) so maintainer endpoints can be tested without a real OIDC flow:
+
+```
+Authorization: Bearer dev-secret-key-change-me
+```
+
+**Never set `Auth:AllowDevKey=true` in production.** Production requires `Auth:Authority` and `Auth:ClientId` to be set to the WorkOS OIDC values.
+
+
 
 Plate characteristic enums (`PlateMaterialEnum`, `PlateColorEnum`, `PlateSkirtEnum`) live in `Common/Enums`. Store enums as integers in PostgreSQL; use descriptive names in API responses by serializing as strings where appropriate.
 
@@ -127,28 +186,39 @@ API docs are served at `/api` via Scalar. Annotate endpoints with `.WithSummary(
 ### Integration Tests (`Tests/PlateLib.IntegrationTests`)
 
 - **Every new feature must have minimal integration tests covering the most critical HTTP behaviour** (happy path + key error cases like 404 or 400).
-- Use `DistributedApplicationTestingBuilder.CreateAsync<Projects.AppHost>()` to spin up the full Aspire application.
-- Obtain a typed `HttpClient` via `app.CreateHttpClient("api")`.
+- Integration tests require Docker
 - Mirror the feature slice structure: test files live in `Tests/PlateLib.IntegrationTests/Features/<Feature>/`.
-- Integration tests require Docker (PostgreSQL container started by Aspire).
 - Run with: `dotnet test Tests/PlateLib.IntegrationTests`
 
-Example integration test pattern:
+#### Shared AppHost fixture (required pattern)
+
+The Aspire AppHost is expensive to start. **All integration tests share a single AppHost instance** via xUnit's `ICollectionFixture`. Never create a `DistributedApplication` inside an individual test.
+
+The fixture is defined in `Tests/PlateLib.IntegrationTests/AspireAppFixture.cs`. It configures an HTTP resilience handler, starts the app, and waits for the `"api"` resource to be healthy before any test runs:
+
+#### Test class pattern
+
+Decorate every integration test class with `[Collection(AspireAppCollection.CollectionName)]` and inject `AspireAppFixture` via the primary constructor. Use `fixture.CreateApiClient()` to get a fresh client per test — pass the dev API key for authenticated tests.
+
+Each test must be **self-contained and isolated** — use `Guid.NewGuid()` to generate unique names/IDs so tests do not interfere with shared database state.
+
 ```csharp
-public class PlatesApiTests
+[Collection(AspireAppCollection.CollectionName)]
+public class PlatesApiTests(AspireAppFixture fixture)
 {
     [Fact]
     public async Task GetPlates_ReturnsOk()
     {
-        var appHost = await DistributedApplicationTestingBuilder
-            .CreateAsync<Projects.AppHost>();
-        await using var app = await appHost.BuildAsync();
-        await app.StartAsync();
-
-        var client = app.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();            // unauthenticated
         var response = await client.GetAsync("/api/plates");
-
         response.EnsureSuccessStatusCode();
+    }
+
+    [Fact]
+    public async Task CreatePlate_WithAuth_ReturnsCreated()
+    {
+        var client = fixture.CreateMaintainerClient();    // dev bearer token
+        // ...
     }
 }
 ```
