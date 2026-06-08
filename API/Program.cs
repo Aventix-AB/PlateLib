@@ -40,7 +40,7 @@ builder.Services.AddProblemDetails(options =>
 builder.AddNpgsqlDbContext<PlateLibContext>(
     connectionName: "postgresdb");
 
-builder.Services.AddValidatorsFromAssemblyContaining<WebApplication>();
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 // Add health checks
 builder.Services.AddHealthChecks();
