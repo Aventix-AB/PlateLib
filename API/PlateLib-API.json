@@ -5,6 +5,55 @@
     "version": "1.0.0"
   },
   "paths": {
+    "/api/search": {
+      "get": {
+        "tags": [
+          "Search"
+        ],
+        "summary": "Search plates and manufacturers",
+        "description": "Full-text search across plates (name, catalog number) and manufacturers (name). Returns a combined list ordered by name.",
+        "operationId": "Search",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pageIndex",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/plates": {
       "get": {
         "tags": [
@@ -521,10 +570,99 @@
       "IFormFile": {
         "type": "string",
         "format": "binary"
+      },
+      "SearchEntityType": {
+        "enum": [
+          "Plate",
+          "Manufacturer"
+        ]
+      },
+      "SearchResponse": {
+        "required": [
+          "items",
+          "totalCount"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchResultItem"
+            }
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "SearchResultItem": {
+        "required": [
+          "entityType",
+          "id",
+          "name",
+          "hasThumbnail",
+          "catalogNumber",
+          "wellCount",
+          "manufacturerId",
+          "manufacturerName",
+          "websiteUrl"
+        ],
+        "type": "object",
+        "properties": {
+          "entityType": {
+            "$ref": "#/components/schemas/SearchEntityType"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "hasThumbnail": {
+            "type": "boolean"
+          },
+          "catalogNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "wellCount": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "manufacturerId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "manufacturerName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "websiteUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
       }
     }
   },
   "tags": [
+    {
+      "name": "Search"
+    },
     {
       "name": "Plates"
     },

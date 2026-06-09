@@ -87,7 +87,7 @@ public static class SeedPlate
         {
             Id = Guid.NewGuid(),
             Name = "MICROPLATE, 96 WELL, PS, F-BOTTOM, CLEAR",
-            CatalogNumber = "655101",
+            CatalogNumber = "651101",
             WellCount = 96,
             MaterialId = psMaterial.Id,
             ManufacturerId = manufacturer.Id,

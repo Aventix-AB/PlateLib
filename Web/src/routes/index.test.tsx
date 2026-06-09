@@ -8,7 +8,7 @@ import {
   RouterProvider,
   Outlet,
 } from '@tanstack/react-router'
-import { Route as IndexRouteImport } from './index'
+import { Route as SearchRouteImport } from './index'
 import { $api } from '@/lib/api/client'
 import type { components } from '@/lib/api/schema.gen'
 
@@ -18,36 +18,47 @@ vi.mock('@/lib/api/client', () => ({
 
 const mockUseQuery = vi.mocked($api.useQuery)
 
-const plate: components['schemas']['PlateResponse'] = {
-  id: 'aaaa-0000',
+const plateResult: components['schemas']['SearchResultItem'] = {
+  entityType: 'Plate',
+  id: 'plate-001',
   name: 'Corning 96-Well',
+  hasThumbnail: false,
   catalogNumber: 'CLS3595',
   wellCount: 96,
-  material: { code: 'PS', name: 'Polystyrene' },
   manufacturerId: 'mfr-1',
   manufacturerName: 'Corning',
-  properties: [],
+  websiteUrl: null,
 }
 
-const pagedResult: components['schemas']['PagedResultOfPlateResponse'] = {
-  items: [plate],
-  totalCount: 1,
-  pageIndex: 0,
-  pageSize: 25,
+const manufacturerResult: components['schemas']['SearchResultItem'] = {
+  entityType: 'Manufacturer',
+  id: 'mfr-1',
+  name: 'Corning',
+  hasThumbnail: false,
+  catalogNumber: null,
+  wellCount: null,
+  manufacturerId: null,
+  manufacturerName: null,
+  websiteUrl: 'https://corning.com',
+}
+
+const searchResponse: components['schemas']['SearchResponse'] = {
+  items: [plateResult, manufacturerResult],
+  totalCount: 2,
 }
 
 function renderAtPath(path = '/') {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   const rootRoute = createRootRoute({ component: Outlet })
 
-  const indexRoute = IndexRouteImport.update({
+  const searchRoute = SearchRouteImport.update({
     getParentRoute: () => rootRoute,
     id: '/',
     path: '/',
-  } as Parameters<typeof IndexRouteImport.update>[0])
+  } as Parameters<typeof SearchRouteImport.update>[0])
 
   const router = createRouter({
-    routeTree: rootRoute.addChildren([indexRoute as typeof IndexRouteImport]),
+    routeTree: rootRoute.addChildren([searchRoute as typeof SearchRouteImport]),
     history: createMemoryHistory({ initialEntries: [path] }),
   })
 
@@ -58,47 +69,12 @@ function renderAtPath(path = '/') {
   )
 }
 
-describe('PlatesPage', () => {
+describe('SearchPage', () => {
   beforeEach(() => vi.clearAllMocks())
-
-  it('shows loading state while fetching', async () => {
-    mockUseQuery.mockReturnValue({
-      data: undefined,
-      isLoading: true,
-      isError: false,
-    } as ReturnType<typeof mockUseQuery>)
-
-    renderAtPath('/')
-    expect(await screen.findByText('Loading…')).toBeTruthy()
-  })
-
-  it('renders plate rows from API data', async () => {
-    mockUseQuery.mockReturnValue({
-      data: pagedResult,
-      isLoading: false,
-      isError: false,
-    } as ReturnType<typeof mockUseQuery>)
-
-    renderAtPath('/')
-    expect(await screen.findByText('Corning 96-Well')).toBeTruthy()
-    expect(screen.getByText('CLS3595')).toBeTruthy()
-    expect(screen.getByText('Corning')).toBeTruthy()
-  })
-
-  it('shows empty state when no plates are returned', async () => {
-    mockUseQuery.mockReturnValue({
-      data: { ...pagedResult, items: [], totalCount: 0 },
-      isLoading: false,
-      isError: false,
-    } as ReturnType<typeof mockUseQuery>)
-
-    renderAtPath('/')
-    expect(await screen.findByText('No plates found')).toBeTruthy()
-  })
 
   it('renders the search input', async () => {
     mockUseQuery.mockReturnValue({
-      data: pagedResult,
+      data: undefined,
       isLoading: false,
       isError: false,
     } as ReturnType<typeof mockUseQuery>)
@@ -107,24 +83,71 @@ describe('PlatesPage', () => {
     expect(await screen.findByRole('searchbox')).toBeTruthy()
   })
 
-  it('passes search query param to $api.useQuery', async () => {
+  it('shows hero heading', async () => {
     mockUseQuery.mockReturnValue({
-      data: pagedResult,
+      data: undefined,
       isLoading: false,
       isError: false,
     } as ReturnType<typeof mockUseQuery>)
 
-    renderAtPath('/?search=corning')
+    renderAtPath('/')
+    expect(await screen.findByText(/find any plate or manufacturer/i)).toBeTruthy()
+  })
+
+  it('shows searching state while loading', async () => {
+    mockUseQuery.mockReturnValue({
+      data: undefined,
+      isLoading: true,
+      isError: false,
+    } as ReturnType<typeof mockUseQuery>)
+
+    renderAtPath('/?q=corning')
+    expect(await screen.findByText('Searching…')).toBeTruthy()
+  })
+
+  it('shows no results message when search returns empty', async () => {
+    mockUseQuery.mockReturnValue({
+      data: { items: [], totalCount: 0 },
+      isLoading: false,
+      isError: false,
+    } as ReturnType<typeof mockUseQuery>)
+
+    renderAtPath('/?q=notfound')
+    expect(await screen.findByText(/"notfound"/i)).toBeTruthy()
+  })
+
+  it('renders plate and manufacturer search results', async () => {
+    mockUseQuery.mockReturnValue({
+      data: searchResponse,
+      isLoading: false,
+      isError: false,
+    } as ReturnType<typeof mockUseQuery>)
+
+    renderAtPath('/?q=corning')
+    expect(await screen.findByText('Corning 96-Well')).toBeTruthy()
+    expect(screen.getAllByText('Corning').length).toBeGreaterThan(0)
+  })
+
+  it('calls useQuery with the q param from the URL', async () => {
+    mockUseQuery.mockReturnValue({
+      data: searchResponse,
+      isLoading: false,
+      isError: false,
+    } as ReturnType<typeof mockUseQuery>)
+
+    renderAtPath('/?q=corning')
     await screen.findByText('Corning 96-Well')
 
     expect(mockUseQuery).toHaveBeenCalledWith(
       'get',
-      '/api/plates',
+      '/api/search',
       expect.objectContaining({
         params: expect.objectContaining({
-          query: expect.objectContaining({ search: 'corning' }),
+          query: expect.objectContaining({ q: 'corning' }),
         }),
       }),
+      expect.anything(),
     )
   })
 })
+

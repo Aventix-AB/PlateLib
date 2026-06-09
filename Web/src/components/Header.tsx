@@ -13,7 +13,7 @@ export default function Header() {
         </Link>
         <nav className="flex items-center gap-4 text-sm">
           <Link
-            to="/"
+            to="/plates"
             className="text-muted-foreground hover:text-foreground transition-colors [&.active]:text-foreground [&.active]:font-medium"
           >
             Plates

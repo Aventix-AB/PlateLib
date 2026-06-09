@@ -10,7 +10,6 @@ import {
 } from '@tanstack/react-router'
 import { Route as PlateDetailRouteImport } from './plates.$id'
 import { $api } from '@/lib/api/client'
-import type { components } from '@/lib/api/schema.gen'
 
 vi.mock('@/lib/api/client', () => ({
   $api: { useQuery: vi.fn() },
@@ -18,7 +17,7 @@ vi.mock('@/lib/api/client', () => ({
 
 const mockUseQuery = vi.mocked($api.useQuery)
 
-const plateDetail: components['schemas']['PlateDetailResponse'] = {
+const plateDetail = {
   id: 'plate-001',
   name: 'Nunc 384-Well',
   catalogNumber: 'P7735',
