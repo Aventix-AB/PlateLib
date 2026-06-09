@@ -87,7 +87,12 @@ function PlatesPage() {
   });
 
   const data = rawData as
-    | { items: PlateRow[]; totalCount: number; pageIndex: number; pageSize: number }
+    | {
+        items: PlateRow[];
+        totalCount: number;
+        pageIndex: number;
+        pageSize: number;
+      }
     | undefined;
 
   const totalCount = data?.totalCount ?? 0;
