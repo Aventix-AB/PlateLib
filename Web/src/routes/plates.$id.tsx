@@ -1,10 +1,34 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, FileDown } from "lucide-react";
 import { $api } from "@/lib/api/client";
+import { InfoCard } from "@/components/ui/card";
+import { EntityThumbnail } from "@/components/ui/thumbnail";
 
 export const Route = createFileRoute("/plates/$id")({
   component: PlateDetailPage,
 });
+
+function ManufacturerBadge({
+  id,
+  name,
+  hasThumbnail,
+}: {
+  id: string;
+  name: string;
+  hasThumbnail?: boolean;
+}) {
+  return (
+    <Link to="/manufacturers/$id" params={{ id }} className="pl-badge-link">
+      <EntityThumbnail
+        src={hasThumbnail ? `/api/manufacturers/${id}/thumbnail` : null}
+        alt={name}
+        size="sm"
+        className="w-5 h-5"
+      />
+      {name}
+    </Link>
+  );
+}
 
 function PlateDetailPage() {
   const { id } = Route.useParams();
@@ -19,84 +43,87 @@ function PlateDetailPage() {
 
   if (isLoading) {
     return (
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        <div className="text-gray-400">Loading…</div>
+      <main className="pl-page">
+        <p className="text-muted-foreground">Loading…</p>
       </main>
     );
   }
 
   if (isError || !plate) {
     return (
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline mb-6"
-        >
+      <main className="pl-page">
+        <Link to="/" className="pl-back-link">
           <ArrowLeft size={16} /> Back to plates
         </Link>
-        <div className="text-red-500">Plate not found.</div>
+        <p className="text-destructive">Plate not found.</p>
       </main>
     );
   }
 
+  // plate is typed as `never` in current schema — cast until schema is regenerated
+  const p = plate as {
+    id: string;
+    name: string;
+    catalogNumber: string;
+    wellCount: number;
+    material: { code: string; name: string };
+    manufacturerId: string;
+    manufacturerName: string;
+    properties: { name: string; value: string }[];
+    files: { id: string; fileName: string; contentType: string }[];
+  };
+
   return (
-    <main className="max-w-4xl mx-auto px-4 py-8">
-      <Link
-        to="/"
-        className="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline mb-6"
-      >
+    <main className="pl-page">
+      <Link to="/" className="pl-back-link">
         <ArrowLeft size={16} /> Back to plates
       </Link>
 
-      <h1 className="text-3xl font-bold text-gray-900 mb-1">{plate.name}</h1>
-      <p className="text-gray-500 mb-8 font-mono text-sm">
-        {plate.catalogNumber}
+      <h1 className="text-3xl font-bold text-foreground mb-1">{p.name}</h1>
+      <p className="text-muted-foreground mb-4 font-mono text-sm">
+        {p.catalogNumber}
       </p>
 
+      <div className="mb-8">
+        <ManufacturerBadge id={p.manufacturerId} name={p.manufacturerName} />
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-        <InfoCard label="Manufacturer" value={plate.manufacturerName} />
-        <InfoCard label="Wells" value={String(plate.wellCount)} />
+        <InfoCard label="Wells" value={String(p.wellCount)} />
         <InfoCard
           label="Material"
-          value={`${plate.material.code} — ${plate.material.name}`}
+          value={`${p.material.code} — ${p.material.name}`}
         />
       </div>
 
-      {plate.properties.length > 0 && (
+      {p.properties.length > 0 && (
         <section className="mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-3">
-            Properties
-          </h2>
+          <h2 className="pl-section-heading">Properties</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {plate.properties.map((p) => (
-              <div
-                key={p.name}
-                className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3"
-              >
-                <div className="text-xs text-gray-500 uppercase tracking-wide mb-0.5">
-                  {p.name}
-                </div>
-                <div className="font-medium text-gray-800">{p.value}</div>
+            {p.properties.map((prop) => (
+              <div key={prop.name} className="pl-card pl-card-body">
+                <div className="pl-card-label">{prop.name}</div>
+                <div className="pl-card-value">{prop.value}</div>
               </div>
             ))}
           </div>
         </section>
       )}
 
-      {plate.files.length > 0 && (
+      {p.files.length > 0 && (
         <section>
-          <h2 className="text-lg font-semibold text-gray-900 mb-3">Files</h2>
+          <h2 className="pl-section-heading">Files</h2>
           <ul className="space-y-2">
-            {plate.files.map((f) => (
+            {p.files.map((f) => (
               <li key={f.id}>
                 <a
                   href={`/api/files/${f.id}/download`}
                   download={f.fileName}
-                  className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline"
+                  className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
                 >
                   <FileDown size={16} />
                   {f.fileName}
-                  <span className="text-gray-400 text-xs">
+                  <span className="text-muted-foreground text-xs">
                     ({f.contentType})
                   </span>
                 </a>
@@ -109,13 +136,3 @@ function PlateDetailPage() {
   );
 }
 
-function InfoCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm">
-      <div className="text-xs text-gray-500 uppercase tracking-wide mb-0.5">
-        {label}
-      </div>
-      <div className="font-semibold text-gray-800">{value}</div>
-    </div>
-  );
-}

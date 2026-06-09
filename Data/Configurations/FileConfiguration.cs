@@ -29,5 +29,10 @@ public class FileConfiguration : IEntityTypeConfiguration<LibFile>
         // a plate can reference multiple files.
         entity.HasMany(f => f.Plates)
             .WithMany(p => p.Files);
+
+        // Many-to-many: a file can be attached to multiple manufacturers;
+        // a manufacturer can have multiple files.
+        entity.HasMany(f => f.Manufacturers)
+            .WithMany(m => m.Files);
     }
 }

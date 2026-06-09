@@ -99,10 +99,10 @@ function PlatesPage() {
     void navigate({ search: (prev) => ({ ...prev, pageIndex: idx }) });
 
   return (
-    <main className="max-w-7xl mx-auto px-4 py-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">Plates</h1>
-        <p className="text-gray-500 text-sm">
+    <main className="pl-page">
+      <div className="pl-page-header">
+        <h1 className="pl-page-title">Plates</h1>
+        <p className="pl-page-subtitle">
           Search and browse microwell plates
         </p>
       </div>
@@ -114,20 +114,17 @@ function PlatesPage() {
           onChange={(e) => setInputValue(e.target.value)}
           placeholder="Search by name or catalog number…"
           aria-label="Search plates"
-          className="w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="pl-input max-w-md"
         />
       </div>
 
-      <div className="border border-gray-200 rounded-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200 text-sm">
-          <thead className="bg-gray-50">
+      <div className="pl-table-container">
+        <table className="pl-table">
+          <thead className="pl-table-head">
             {table.getHeaderGroups().map((hg) => (
               <tr key={hg.id}>
                 {hg.headers.map((header) => (
-                  <th
-                    key={header.id}
-                    className="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wide text-xs"
-                  >
+                  <th key={header.id} className="pl-table-th">
                     {flexRender(
                       header.column.columnDef.header,
                       header.getContext(),
@@ -137,12 +134,12 @@ function PlatesPage() {
               </tr>
             ))}
           </thead>
-          <tbody className="divide-y divide-gray-100 bg-white">
+          <tbody className="pl-table-body">
             {isLoading ? (
               <tr>
                 <td
                   colSpan={columns.length}
-                  className="px-4 py-10 text-center text-gray-400"
+                  className="px-4 py-10 text-center text-muted-foreground"
                 >
                   Loading…
                 </td>
@@ -151,7 +148,7 @@ function PlatesPage() {
               <tr>
                 <td
                   colSpan={columns.length}
-                  className="px-4 py-10 text-center text-gray-400"
+                  className="px-4 py-10 text-center text-muted-foreground"
                 >
                   No plates found
                 </td>
@@ -175,10 +172,10 @@ function PlatesPage() {
                         params: { id: row.original.id },
                       });
                   }}
-                  className="hover:bg-blue-50 cursor-pointer transition-colors"
+                  className="pl-table-row-interactive"
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="px-4 py-3 text-gray-800">
+                    <td key={cell.id} className="pl-table-td">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext(),
@@ -192,7 +189,7 @@ function PlatesPage() {
         </table>
       </div>
 
-      <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
+      <div className="pl-pagination">
         <span>
           {totalCount > 0
             ? `${pageIndex * pageSize + 1}–${Math.min((pageIndex + 1) * pageSize, totalCount)} of ${totalCount}`
@@ -202,14 +199,14 @@ function PlatesPage() {
           <button
             onClick={() => goTo(pageIndex - 1)}
             disabled={!canPrev}
-            className="px-3 py-1 border border-gray-300 rounded disabled:opacity-40 hover:bg-gray-50 disabled:cursor-not-allowed"
+            className="pl-pagination-btn"
           >
             Previous
           </button>
           <button
             onClick={() => goTo(pageIndex + 1)}
             disabled={!canNext}
-            className="px-3 py-1 border border-gray-300 rounded disabled:opacity-40 hover:bg-gray-50 disabled:cursor-not-allowed"
+            className="pl-pagination-btn"
           >
             Next
           </button>

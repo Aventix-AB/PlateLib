@@ -10,11 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ManufacturersIndexRouteImport } from './routes/manufacturers.index'
 import { Route as PlatesIdRouteImport } from './routes/plates.$id'
+import { Route as ManufacturersIdRouteImport } from './routes/manufacturers.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ManufacturersIndexRoute = ManufacturersIndexRouteImport.update({
+  id: '/manufacturers/',
+  path: '/manufacturers/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlatesIdRoute = PlatesIdRouteImport.update({
@@ -22,31 +29,49 @@ const PlatesIdRoute = PlatesIdRouteImport.update({
   path: '/plates/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ManufacturersIdRoute = ManufacturersIdRouteImport.update({
+  id: '/manufacturers/$id',
+  path: '/manufacturers/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/manufacturers/$id': typeof ManufacturersIdRoute
   '/plates/$id': typeof PlatesIdRoute
+  '/manufacturers': typeof ManufacturersIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/manufacturers/$id': typeof ManufacturersIdRoute
   '/plates/$id': typeof PlatesIdRoute
+  '/manufacturers': typeof ManufacturersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/manufacturers/$id': typeof ManufacturersIdRoute
   '/plates/$id': typeof PlatesIdRoute
+  '/manufacturers/': typeof ManufacturersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/plates/$id'
+  fullPaths: '/' | '/manufacturers/$id' | '/plates/$id' | '/manufacturers'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/plates/$id'
-  id: '__root__' | '/' | '/plates/$id'
+  to: '/' | '/manufacturers/$id' | '/plates/$id' | '/manufacturers'
+  id:
+    | '__root__'
+    | '/'
+    | '/manufacturers/$id'
+    | '/plates/$id'
+    | '/manufacturers/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ManufacturersIdRoute: typeof ManufacturersIdRoute
   PlatesIdRoute: typeof PlatesIdRoute
+  ManufacturersIndexRoute: typeof ManufacturersIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -58,6 +83,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/manufacturers/': {
+      id: '/manufacturers/'
+      path: '/manufacturers'
+      fullPath: '/manufacturers'
+      preLoaderRoute: typeof ManufacturersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/plates/$id': {
       id: '/plates/$id'
       path: '/plates/$id'
@@ -65,12 +97,21 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlatesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/manufacturers/$id': {
+      id: '/manufacturers/$id'
+      path: '/manufacturers/$id'
+      fullPath: '/manufacturers/$id'
+      preLoaderRoute: typeof ManufacturersIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ManufacturersIdRoute: ManufacturersIdRoute,
   PlatesIdRoute: PlatesIdRoute,
+  ManufacturersIndexRoute: ManufacturersIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

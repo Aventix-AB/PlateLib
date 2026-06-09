@@ -17,7 +17,6 @@ applyTo: "Web/**"
 | Radix UI + shadcn/ui | Accessible component primitives |
 | openapi-typescript | Generates TypeScript types from the backend OpenAPI schema |
 | openapi-fetch + openapi-react-query | Type-safe API client + TanStack Query integration |
-| Zod | Schema validation for route search params and forms |
 | pnpm | Package manager |
 
 ## Project Structure
@@ -107,7 +106,7 @@ The core UI concern is helping users discover and compare well plates:
 pnpm dev            # Start dev server on port 3000
 pnpm build          # Build for production
 pnpm test           # Run Vitest tests
-pnpm generate:api   # Regenerate TypeScript types from backend OpenAPI schema (backend must be running)
+pnpm generate:api   # Regenerate TypeScript types from backend OpenAPI schema
 ```
 
 ## Testing
