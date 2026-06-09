@@ -4,7 +4,7 @@ using Data.Configurations;
 namespace Data.Entities;
 
 [EntityTypeConfiguration(typeof(PlateConfiguration))]
-public class Plate
+public class Plate : SearchableEntity
 {
     public required Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;

@@ -29,5 +29,13 @@ public class ManufacturerConfiguration : IEntityTypeConfiguration<Manufacturer>
         // Many-to-many: a manufacturer can have multiple files; a file can be attached to multiple manufacturers.
         entity.HasMany(m => m.Files)
             .WithMany(f => f.Manufacturers);
+
+        // Full-text search vector: generated from Name, indexed with GIN
+        entity.HasGeneratedTsVectorColumn(
+                m => m.SearchVector,
+                "english",
+                m => new { m.Name })
+            .HasIndex(m => m.SearchVector)
+            .HasMethod("GIN");
     }
 }

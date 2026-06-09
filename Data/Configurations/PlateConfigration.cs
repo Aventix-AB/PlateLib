@@ -24,6 +24,14 @@ public class PlateConfiguration : IEntityTypeConfiguration<Plate>
         entity.HasIndex(e => e.ManufacturerId);
         entity.HasIndex(e => e.MaterialId);
 
+        // Full-text search vector: generated from Name and CatalogNumber, indexed with GIN
+        entity.HasGeneratedTsVectorColumn(
+                p => p.SearchVector,
+                "english",
+                p => new { p.Name, p.CatalogNumber })
+            .HasIndex(p => p.SearchVector)
+            .HasMethod("GIN");
+
         // Relationships configured in ManufacturerConfiguration and MaterialConfiguration
     }
 }

@@ -1,217 +1,125 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { useState, useEffect } from "react";
-import {
-  useReactTable,
-  getCoreRowModel,
-  flexRender,
-  createColumnHelper,
-} from "@tanstack/react-table";
+import { Search } from "lucide-react";
 import { $api } from "@/lib/api/client";
 import type { components } from "@/lib/api/schema.gen";
+import { PlateSearchResult } from "@/components/search/PlateSearchResult";
+import { ManufacturerSearchResult } from "@/components/search/ManufacturerSearchResult";
 
-type PlateRow = components["schemas"]["PlateResponse"];
+type SearchEntityType = components["schemas"]["SearchEntityType"];
+
+const ENTITY_TYPES = {
+  Plate: "Plate" as SearchEntityType,
+  Manufacturer: "Manufacturer" as SearchEntityType,
+};
 
 const searchSchema = z.object({
-  search: z.string().optional().default(""),
-  pageIndex: z.number().int().min(0).optional().default(0),
-  pageSize: z.number().int().min(1).max(100).optional().default(25),
+  q: z.string().optional().default(""),
 });
 
 export const Route = createFileRoute("/")({
   validateSearch: searchSchema,
-  component: PlatesPage,
+  component: SearchPage,
 });
 
-const columnHelper = createColumnHelper<PlateRow>();
-
-const columns = [
-  columnHelper.accessor("name", {
-    header: "Name",
-  }),
-  columnHelper.accessor("catalogNumber", {
-    header: "Catalog No.",
-  }),
-  columnHelper.accessor("wellCount", {
-    header: "Wells",
-  }),
-  columnHelper.accessor("material", {
-    header: "Material",
-    cell: (info) => `${info.getValue().code} — ${info.getValue().name}`,
-  }),
-  columnHelper.accessor("manufacturerName", {
-    header: "Manufacturer",
-  }),
-];
-
-function PlatesPage() {
+function SearchPage() {
   const navigate = useNavigate({ from: "/" });
-  const { search, pageIndex, pageSize } = Route.useSearch();
+  const { q } = Route.useSearch();
 
-  const [inputValue, setInputValue] = useState(search);
+  const [inputValue, setInputValue] = useState(q);
 
   // Sync input when URL param changes externally (e.g. back navigation)
   useEffect(() => {
-    setInputValue(search);
-  }, [search]);
+    setInputValue(q);
+  }, [q]);
 
-  // Debounce search input → URL param
+  // Debounce input → URL param
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (inputValue !== search) {
-        void navigate({
-          search: (prev) => ({ ...prev, search: inputValue, pageIndex: 0 }),
-        });
+      if (inputValue !== q) {
+        void navigate({ search: () => ({ q: inputValue }) });
       }
     }, 300);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inputValue]);
 
-  const { data, isLoading } = $api.useQuery("get", "/api/plates", {
-    params: {
-      query: {
-        search: search || undefined,
-        pageIndex,
-        pageSize,
-      },
-    },
-  });
+  const { data, isLoading } = $api.useQuery(
+    "get",
+    "/api/search",
+    { params: { query: { q: q || undefined } } },
+    { enabled: !!q },
+  );
 
-  const totalCount = data?.totalCount ?? 0;
-  const totalPages = Math.ceil(totalCount / pageSize);
-  const canPrev = pageIndex > 0;
-  const canNext = pageIndex < totalPages - 1;
-
-  const table = useReactTable({
-    data: data?.items ?? [],
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    manualPagination: true,
-    manualFiltering: true,
-    rowCount: totalCount,
-    state: {
-      pagination: { pageIndex, pageSize },
-    },
-  });
-
-  const goTo = (idx: number) =>
-    void navigate({ search: (prev) => ({ ...prev, pageIndex: idx }) });
+  const items = data?.items ?? [];
+  const hasQuery = !!q;
 
   return (
-    <main className="pl-page">
-      <div className="pl-page-header">
-        <h1 className="pl-page-title">Plates</h1>
-        <p className="pl-page-subtitle">
-          Search and browse microwell plates
+    <main className="flex flex-col items-center px-4 py-16 min-h-[70vh]">
+      {/* Hero */}
+      <div className="text-center mb-10 max-w-xl w-full">
+        <h1 className="text-4xl font-bold tracking-tight text-foreground mb-3">
+          Find any plate or manufacturer
+        </h1>
+        <p className="text-muted-foreground text-base">
+          Search the PlateLib catalog — microwell plates, catalog numbers,
+          manufacturers and more.
         </p>
       </div>
 
-      <div className="mb-4">
+      {/* Search bar */}
+      <div className="relative w-full max-w-xl mb-8">
+        <Search
+          size={18}
+          className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+        />
         <input
           type="search"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          placeholder="Search by name or catalog number…"
-          aria-label="Search plates"
-          className="pl-input max-w-md"
+          placeholder="Search plates, catalog numbers, manufacturers…"
+          aria-label="Search PlateLib"
+          autoFocus
+          className="pl-input w-full pl-10 py-3 text-base"
         />
       </div>
 
-      <div className="pl-table-container">
-        <table className="pl-table">
-          <thead className="pl-table-head">
-            {table.getHeaderGroups().map((hg) => (
-              <tr key={hg.id}>
-                {hg.headers.map((header) => (
-                  <th key={header.id} className="pl-table-th">
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext(),
-                    )}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody className="pl-table-body">
-            {isLoading ? (
-              <tr>
-                <td
-                  colSpan={columns.length}
-                  className="px-4 py-10 text-center text-muted-foreground"
-                >
-                  Loading…
-                </td>
-              </tr>
-            ) : table.getRowModel().rows.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={columns.length}
-                  className="px-4 py-10 text-center text-muted-foreground"
-                >
-                  No plates found
-                </td>
-              </tr>
-            ) : (
-              table.getRowModel().rows.map((row) => (
-                <tr
-                  key={row.id}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() =>
-                    void navigate({
-                      to: "/plates/$id",
-                      params: { id: row.original.id },
-                    })
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ")
-                      void navigate({
-                        to: "/plates/$id",
-                        params: { id: row.original.id },
-                      });
-                  }}
-                  className="pl-table-row-interactive"
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="pl-table-td">
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      {/* Results */}
+      <div className="w-full max-w-xl">
+        {isLoading && (
+          <p className="text-center text-sm text-muted-foreground py-6">
+            Searching…
+          </p>
+        )}
 
-      <div className="pl-pagination">
-        <span>
-          {totalCount > 0
-            ? `${pageIndex * pageSize + 1}–${Math.min((pageIndex + 1) * pageSize, totalCount)} of ${totalCount}`
-            : ""}
-        </span>
-        <div className="flex gap-2">
-          <button
-            onClick={() => goTo(pageIndex - 1)}
-            disabled={!canPrev}
-            className="pl-pagination-btn"
-          >
-            Previous
-          </button>
-          <button
-            onClick={() => goTo(pageIndex + 1)}
-            disabled={!canNext}
-            className="pl-pagination-btn"
-          >
-            Next
-          </button>
-        </div>
+        {!isLoading && hasQuery && items.length === 0 && (
+          <p className="text-center text-sm text-muted-foreground py-6">
+            No results for <strong>"{q}"</strong>
+          </p>
+        )}
+
+        {!isLoading && items.length > 0 && (
+          <div className="flex flex-col gap-2">
+            {items.map((item) =>
+              item.entityType === ENTITY_TYPES.Plate ? (
+                <PlateSearchResult key={`plate-${item.id}`} item={item} />
+              ) : (
+                <ManufacturerSearchResult
+                  key={`manufacturer-${item.id}`}
+                  item={item}
+                />
+              ),
+            )}
+            {(data?.totalCount ?? 0) > items.length && (
+              <p className="text-center text-xs text-muted-foreground pt-2">
+                Showing {items.length} of {data!.totalCount} results
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </main>
   );
 }
+

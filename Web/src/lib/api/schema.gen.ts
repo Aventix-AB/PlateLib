@@ -4,6 +4,26 @@
  */
 
 export interface paths {
+    "/api/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search plates and manufacturers
+         * @description Full-text search across plates (name, catalog number) and manufacturers (name). Returns a combined list ordered by name.
+         */
+        get: operations["Search"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/plates": {
         parameters: {
             query?: never;
@@ -77,6 +97,51 @@ export interface paths {
         get: operations["GetManufacturerById"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/manufacturers/{id}/thumbnail": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download the thumbnail for a manufacturer
+         * @description Redirects to a short-lived pre-signed URL for direct download of the manufacturer thumbnail from blob storage.
+         */
+        get: operations["GetManufacturerThumbnail"];
+        put?: never;
+        /**
+         * Upload or replace the thumbnail for a manufacturer
+         * @description Uploads a logo/thumbnail image to blob storage and links it to the manufacturer. Replaces any existing thumbnail. Requires maintainer authorization.
+         */
+        post: operations["UploadManufacturerThumbnail"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/manufacturers/{manufacturerId}/files": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get all files attached to a manufacturer */
+        get: operations["GetFilesForManufacturer"];
+        put?: never;
+        /**
+         * Upload a file and attach it to a manufacturer
+         * @description Uploads a file to blob storage and links it to the specified manufacturer. Requires maintainer authorization.
+         */
+        post: operations["UploadManufacturerFile"];
         delete?: never;
         options?: never;
         head?: never;
@@ -200,6 +265,27 @@ export interface components {
         };
         /** Format: binary */
         IFormFile: string;
+        /** @enum {unknown} */
+        SearchEntityType: "Plate" | "Manufacturer";
+        SearchResponse: {
+            items: components["schemas"]["SearchResultItem"][];
+            /** Format: int32 */
+            totalCount: number;
+        };
+        SearchResultItem: {
+            entityType: components["schemas"]["SearchEntityType"];
+            /** Format: uuid */
+            id: string;
+            name: string;
+            hasThumbnail: boolean;
+            catalogNumber: null | string;
+            /** Format: int32 */
+            wellCount: null | number;
+            /** Format: uuid */
+            manufacturerId: null | string;
+            manufacturerName: null | string;
+            websiteUrl: null | string;
+        };
     };
     responses: never;
     parameters: never;
@@ -209,6 +295,30 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    Search: {
+        parameters: {
+            query?: {
+                q?: string;
+                pageIndex?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SearchResponse"];
+                };
+            };
+        };
+    };
     GetPlates: {
         parameters: {
             query?: {
@@ -325,6 +435,98 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    GetManufacturerThumbnail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    UploadManufacturerThumbnail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    file: components["schemas"]["IFormFile"];
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    GetFilesForManufacturer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                manufacturerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    UploadManufacturerFile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                manufacturerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    file: components["schemas"]["IFormFile"];
+                };
+            };
+        };
         responses: {
             /** @description OK */
             200: {

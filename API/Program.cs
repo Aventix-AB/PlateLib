@@ -6,6 +6,7 @@ using API.Auth;
 using API.Features.Files;
 using API.Features.Manufacturers;
 using API.Features.Materials;
+using API.Features.Search;
 using API.Features.Plates;
 using API.Features.PropertyDefinitions;
 using API.Storage;
@@ -138,6 +139,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 // Register feature endpoints
+app.MapSearch();
 app.MapGetPlates();
 app.MapGetPlateById();
 app.MapGetManufacturers();

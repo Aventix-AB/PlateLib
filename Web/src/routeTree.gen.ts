@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PlatesIndexRouteImport } from './routes/plates.index'
 import { Route as ManufacturersIndexRouteImport } from './routes/manufacturers.index'
 import { Route as PlatesIdRouteImport } from './routes/plates.$id'
 import { Route as ManufacturersIdRouteImport } from './routes/manufacturers.$id'
@@ -17,6 +18,11 @@ import { Route as ManufacturersIdRouteImport } from './routes/manufacturers.$id'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlatesIndexRoute = PlatesIndexRouteImport.update({
+  id: '/plates/',
+  path: '/plates/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ManufacturersIndexRoute = ManufacturersIndexRouteImport.update({
@@ -40,12 +46,14 @@ export interface FileRoutesByFullPath {
   '/manufacturers/$id': typeof ManufacturersIdRoute
   '/plates/$id': typeof PlatesIdRoute
   '/manufacturers': typeof ManufacturersIndexRoute
+  '/plates': typeof PlatesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/manufacturers/$id': typeof ManufacturersIdRoute
   '/plates/$id': typeof PlatesIdRoute
   '/manufacturers': typeof ManufacturersIndexRoute
+  '/plates': typeof PlatesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,18 +61,25 @@ export interface FileRoutesById {
   '/manufacturers/$id': typeof ManufacturersIdRoute
   '/plates/$id': typeof PlatesIdRoute
   '/manufacturers/': typeof ManufacturersIndexRoute
+  '/plates/': typeof PlatesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/manufacturers/$id' | '/plates/$id' | '/manufacturers'
+  fullPaths:
+    | '/'
+    | '/manufacturers/$id'
+    | '/plates/$id'
+    | '/manufacturers'
+    | '/plates'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/manufacturers/$id' | '/plates/$id' | '/manufacturers'
+  to: '/' | '/manufacturers/$id' | '/plates/$id' | '/manufacturers' | '/plates'
   id:
     | '__root__'
     | '/'
     | '/manufacturers/$id'
     | '/plates/$id'
     | '/manufacturers/'
+    | '/plates/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -72,6 +87,7 @@ export interface RootRouteChildren {
   ManufacturersIdRoute: typeof ManufacturersIdRoute
   PlatesIdRoute: typeof PlatesIdRoute
   ManufacturersIndexRoute: typeof ManufacturersIndexRoute
+  PlatesIndexRoute: typeof PlatesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -81,6 +97,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/plates/': {
+      id: '/plates/'
+      path: '/plates'
+      fullPath: '/plates'
+      preLoaderRoute: typeof PlatesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/manufacturers/': {
@@ -112,6 +135,7 @@ const rootRouteChildren: RootRouteChildren = {
   ManufacturersIdRoute: ManufacturersIdRoute,
   PlatesIdRoute: PlatesIdRoute,
   ManufacturersIndexRoute: ManufacturersIndexRoute,
+  PlatesIndexRoute: PlatesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
