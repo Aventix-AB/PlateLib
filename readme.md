@@ -18,7 +18,7 @@ PlateLib exposes a **public API** so the data can be used freely in derivative p
 
 ## Contributing
 
-PlateLib is open source — contributions are welcome on both the **code** side and the **labware data** side. Whether you want to add a missing plate, improve the API, or build a new feature, we'd love your help.
+PlateLib is open source — contributions are welcome on both the **code** side and the **labware data** side. Whether you want to add a missing plate, improve the API, or build a new feature, we'd love your help. Contact us on [hello@aventix.io](mailto:hello@aventix.io)
 
 Aventix hosts and maintains the plate library today, but our goal is to grow into a **community of maintainers** — people who keep the code healthy and the labware catalog accurate and comprehensive.
 
