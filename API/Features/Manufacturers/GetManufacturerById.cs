@@ -4,7 +4,7 @@ namespace API.Features.Manufacturers;
 
 public static class GetManufacturerById
 {
-    public record PlateResponse(Guid Id, string Name, string CatalogNumber, int WellCount);
+    public record PlateResponse(Guid Id, string Name, string CatalogNumber, string ProductUrl, int WellCount);
     public record ManufacturerResponse(Guid Id, string Name, string? WebsiteUrl, bool HasThumbnail, List<PlateResponse> Plates);
 
     public static IEndpointRouteBuilder MapGetManufacturerById(this IEndpointRouteBuilder app)
@@ -33,7 +33,7 @@ public static class GetManufacturerById
             manufacturer.ThumbnailStorageKey != null,
             manufacturer.Plates
                 .OrderBy(p => p.Name)
-                .Select(p => new PlateResponse(p.Id, p.Name, p.CatalogNumber, p.WellCount))
+                .Select(p => new PlateResponse(p.Id, p.Name, p.CatalogNumber, p.ProductUrl, p.WellCount))
                 .ToList());
 
         return Results.Ok(response);

@@ -21,6 +21,7 @@ const plate = {
   id: 'aaaa-0000',
   name: 'Corning 96-Well',
   catalogNumber: 'CLS3595',
+  productUrl: 'https://example.com/products/cls3595',
   wellCount: 96,
   material: { code: 'PS', name: 'Polystyrene' },
   manufacturerId: 'mfr-1',
@@ -82,6 +83,7 @@ describe('PlatesPage', () => {
     expect(await screen.findByText('Corning 96-Well')).toBeTruthy()
     expect(screen.getByText('CLS3595')).toBeTruthy()
     expect(screen.getByText('Corning')).toBeTruthy()
+    expect(screen.getByRole('link', { name: /open/i })).toBeTruthy()
   })
 
   it('shows empty state when no plates are returned', async () => {

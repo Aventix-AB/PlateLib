@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { useState, useEffect } from "react";
+import { ExternalLink } from "lucide-react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -13,6 +14,7 @@ interface PlateRow {
   id: string;
   name: string;
   catalogNumber: string;
+  productUrl: string;
   wellCount: number;
   material: { code: string; name: string };
   manufacturerId: string;
@@ -49,6 +51,22 @@ const columns = [
   }),
   columnHelper.accessor("manufacturerName", {
     header: "Manufacturer",
+  }),
+  columnHelper.accessor("productUrl", {
+    header: "Product",
+    cell: (info) => (
+      <a
+        href={info.getValue()}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
+        className="inline-flex items-center gap-1 text-primary hover:underline"
+      >
+        Open
+        <ExternalLink size={13} />
+      </a>
+    ),
   }),
 ];
 

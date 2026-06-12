@@ -4,19 +4,6 @@ namespace API.Features.Plates;
 
 public static class GetPlates
 {
-    public record MaterialResponse(string Code, string Name);
-    public record PlatePropertyResponse(string Name, string Value);
-
-    public record PlateResponse(
-        Guid Id,
-        string Name,
-        string CatalogNumber,
-        int WellCount,
-        MaterialResponse Material,
-        Guid ManufacturerId,
-        string ManufacturerName,
-        List<PlatePropertyResponse> Properties);
-
     public record PagedResult<T>(List<T> Items, int TotalCount, int PageIndex, int PageSize);
 
     public static IEndpointRouteBuilder MapGetPlates(this IEndpointRouteBuilder app)
@@ -72,6 +59,7 @@ public static class GetPlates
                 p.Id,
                 p.Name,
                 p.CatalogNumber,
+                p.ProductUrl,
                 p.WellCount,
                 new MaterialResponse(p.Material.Code, p.Material.Name),
                 p.ManufacturerId,

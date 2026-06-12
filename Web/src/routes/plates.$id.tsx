@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, FileDown } from "lucide-react";
+import { ArrowLeft, ExternalLink, FileDown } from "lucide-react";
 import { $api } from "@/lib/api/client";
 import { InfoCard } from "@/components/ui/card";
 import { EntityThumbnail } from "@/components/ui/thumbnail";
@@ -65,6 +65,7 @@ function PlateDetailPage() {
     id: string;
     name: string;
     catalogNumber: string;
+    productUrl: string;
     wellCount: number;
     material: { code: string; name: string };
     manufacturerId: string;
@@ -83,6 +84,15 @@ function PlateDetailPage() {
       <p className="text-muted-foreground mb-4 font-mono text-sm">
         {p.catalogNumber}
       </p>
+      <a
+        href={p.productUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1 text-sm text-primary hover:underline mb-4"
+      >
+        View product page
+        <ExternalLink size={13} />
+      </a>
 
       <div className="mb-8">
         <ManufacturerBadge id={p.manufacturerId} name={p.manufacturerName} />
@@ -135,4 +145,3 @@ function PlateDetailPage() {
     </main>
   );
 }
-

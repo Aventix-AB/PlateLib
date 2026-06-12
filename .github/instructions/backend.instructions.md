@@ -66,27 +66,12 @@ Migrations are managed via the `Data` project. There is **no design-time factory
 
 ### Steps to add a migration
 
-1. Start the Aspire AppHost so PostgreSQL is available:
+1. run `dotnet ef` targeting the `API` project with `Data` as referenced project:
    ```bash
-   dotnet run --project AppHost
+   dotnet ef migrations add <MigrationName> --project ../Data --context PlateLibContext
    ```
 
-2. In a second terminal, run `dotnet ef` targeting the `Data` project with `MigrationService` as startup project:
-   ```bash
-   dotnet ef migrations add <MigrationName> \
-     --project Data \
-     --startup-project MigrationService \
-     --context PlateLibContext
-   ```
-   Example:
-   ```bash
-   dotnet ef migrations add AddPlateColor \
-     --project Data \
-     --startup-project MigrationService \
-     --context PlateLibContext
-   ```
-
-3. Review the generated migration in `Data/Migrations/` before committing.
+2. Review the generated migration in `Data/Migrations/` before committing.
 
 ### Migration naming conventions
 - Use PascalCase descriptive names: `AddPlateColor`, `AddManufacturerLogo`, `RefactorFilesToStoredFile`

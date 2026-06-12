@@ -80,6 +80,7 @@ public static class SeedPlate
             manufacturerId: greiner.Id,
             materialId: psMaterial.Id,
             catalogNumber: "655101",
+            productUrl: "https://shop.gbo.com/en/row/products/bio-science/microplates/microplates-with-96-wells/655101.html",
             name: "MICROPLATE, 96 WELL, PS, F-BOTTOM, CLEAR",
             wellCount: 96,
             properties:
@@ -96,6 +97,7 @@ public static class SeedPlate
             manufacturerId: greiner.Id,
             materialId: psMaterial.Id,
             catalogNumber: "781101",
+            productUrl: "https://shop.gbo.com/en/row/products/bio-science/microplates/microplates-with-384-wells/781101.html",
             name: "MICROPLATE, 384 WELL, PS, F-BOTTOM",
             wellCount: 384,
             properties:
@@ -112,6 +114,7 @@ public static class SeedPlate
             manufacturerId: corning.Id,
             materialId: psMaterial.Id,
             catalogNumber: "3695",
+            productUrl: "https://ecatalog.corning.com/life-sciences/b2b/US/en/Microplates/Assay-Microplates/Corning%C2%AE-96-well-Half-Area-Clear-Flat-Bottom-Polystyrene-Not-Treated-Microplate/p/3695",
             name: "Corning® 96-well Half Area Clear Flat Bottom Polystyrene Not Treated Microplate, 25 per Bag, without Lid, Nonsterile",
             wellCount: 96,
             properties:
@@ -142,6 +145,7 @@ public static class SeedPlate
         Guid manufacturerId,
         Guid materialId,
         string catalogNumber,
+        string productUrl,
         string name,
         int wellCount,
         (Guid PropertyDefinitionId, string Value)[] properties,
@@ -155,6 +159,7 @@ public static class SeedPlate
             Id = Guid.NewGuid(),
             Name = name,
             CatalogNumber = catalogNumber,
+            ProductUrl = productUrl,
             WellCount = wellCount,
             MaterialId = materialId,
             ManufacturerId = manufacturerId,
@@ -174,4 +179,3 @@ public static class SeedPlate
         await context.SaveChangesAsync(ct);
     }
 }
-

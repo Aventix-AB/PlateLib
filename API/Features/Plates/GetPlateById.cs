@@ -1,23 +1,10 @@
+using API.Features.Files;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Features.Plates;
 
 public static class GetPlateById
 {
-    public record FileResponse(Guid Id, string FileName, string ContentType);
-    public record MaterialResponse(string Code, string Name);
-    public record PlatePropertyResponse(string Name, string Value);
-
-    public record PlateResponse(
-        Guid Id,
-        string Name,
-        string CatalogNumber,
-        int WellCount,
-        MaterialResponse Material,
-        Guid ManufacturerId,
-        string ManufacturerName,
-        List<PlatePropertyResponse> Properties,
-        List<FileResponse> Files);
 
     public static IEndpointRouteBuilder MapGetPlateById(this IEndpointRouteBuilder app)
     {
@@ -42,10 +29,11 @@ public static class GetPlateById
         if (plate is null)
             return Results.NotFound();
 
-        var response = new PlateResponse(
+        var response = new PlateDetailResponse(
             plate.Id,
             plate.Name,
             plate.CatalogNumber,
+            plate.ProductUrl,
             plate.WellCount,
             new MaterialResponse(plate.Material.Code, plate.Material.Name),
             plate.ManufacturerId,

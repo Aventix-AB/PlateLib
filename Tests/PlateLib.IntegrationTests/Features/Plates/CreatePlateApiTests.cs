@@ -15,6 +15,7 @@ public class CreatePlateApiTests(AspireAppFixture fixture)
         {
             name = "Test Plate",
             catalogNumber = "TEST-001",
+            productUrl = "https://example.com/products/test-001",
             wellCount = 96,
             manufacturerId = Guid.NewGuid(),
             materialId = Guid.NewGuid(),
@@ -33,6 +34,7 @@ public class CreatePlateApiTests(AspireAppFixture fixture)
         {
             name = "Test Plate",
             catalogNumber = "TEST-001",
+            productUrl = "https://example.com/products/test-001",
             wellCount = 0,
             manufacturerId = Guid.NewGuid(),
             materialId = Guid.NewGuid(),
@@ -50,6 +52,7 @@ public class CreatePlateApiTests(AspireAppFixture fixture)
         {
             name = "Test Plate",
             catalogNumber = $"TEST-{Guid.NewGuid():N}",
+            productUrl = "https://example.com/products/test-001",
             wellCount = 96,
             manufacturerId = Guid.NewGuid(),
             materialId = Guid.NewGuid(),
@@ -58,4 +61,3 @@ public class CreatePlateApiTests(AspireAppFixture fixture)
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
     }
 }
-
