@@ -13,6 +13,7 @@ public class CreatePlateValidatorTests
         var request = new CreatePlate.CreatePlateRequest(
             Name: "MICROPLATE 96 WELL",
             CatalogNumber: "3596",
+            ProductUrl: "https://example.com/products/3596",
             WellCount: 96,
             ManufacturerId: Guid.NewGuid(),
             MaterialId: Guid.NewGuid(),
@@ -24,15 +25,18 @@ public class CreatePlateValidatorTests
     }
 
     [Theory]
-    [InlineData("", "3596", 96)]
-    [InlineData("Valid Name", "", 96)]
-    [InlineData("Valid Name", "3596", 0)]
-    [InlineData("Valid Name", "3596", -1)]
-    public async Task Validate_WithInvalidFields_Fails(string name, string catalogNumber, int wellCount)
+    [InlineData("", "3596", "https://example.com/products/3596", 96)]
+    [InlineData("Valid Name", "", "https://example.com/products/3596", 96)]
+    [InlineData("Valid Name", "3596", "", 96)]
+    [InlineData("Valid Name", "3596", "not-a-url", 96)]
+    [InlineData("Valid Name", "3596", "https://example.com/products/3596", 0)]
+    [InlineData("Valid Name", "3596", "https://example.com/products/3596", -1)]
+    public async Task Validate_WithInvalidFields_Fails(string name, string catalogNumber, string productUrl, int wellCount)
     {
         var request = new CreatePlate.CreatePlateRequest(
             Name: name,
             CatalogNumber: catalogNumber,
+            ProductUrl: productUrl,
             WellCount: wellCount,
             ManufacturerId: Guid.NewGuid(),
             MaterialId: Guid.NewGuid(),
@@ -49,6 +53,7 @@ public class CreatePlateValidatorTests
         var request = new CreatePlate.CreatePlateRequest(
             Name: "Valid Name",
             CatalogNumber: "3596",
+            ProductUrl: "https://example.com/products/3596",
             WellCount: 96,
             ManufacturerId: Guid.Empty,
             MaterialId: Guid.NewGuid(),

@@ -253,6 +253,7 @@ export interface components {
         CreatePlateRequest: {
             name: string;
             catalogNumber: string;
+            productUrl: string;
             /** Format: int32 */
             wellCount: number;
             /** Format: uuid */

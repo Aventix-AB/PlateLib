@@ -14,6 +14,7 @@ public class GetPlatesTests
             Id = Guid.NewGuid(),
             Name = "Corning 96-Well",
             CatalogNumber = "3596",
+            ProductUrl = "https://example.com/products/3596",
             WellCount = 96,
             MaterialId = material.Id,
             Material = material,
@@ -34,6 +35,7 @@ public class GetPlatesTests
         {
             Id = Guid.NewGuid(),
             CatalogNumber = "3596",
+            ProductUrl = "https://example.com/products/3596",
             WellCount = 96,
             ManufacturerId = Guid.NewGuid(),
             MaterialId = Guid.NewGuid(),

@@ -21,6 +21,7 @@ const plateDetail = {
   id: 'plate-001',
   name: 'Nunc 384-Well',
   catalogNumber: 'P7735',
+  productUrl: 'https://example.com/products/p7735',
   wellCount: 384,
   material: { code: 'PS', name: 'Polystyrene' },
   manufacturerId: 'mfr-2',
@@ -80,6 +81,17 @@ describe('PlateDetailPage', () => {
     renderAtPath('/plates/plate-001')
     expect(await screen.findByText('Nunc 384-Well')).toBeTruthy()
     expect(screen.getByText('P7735')).toBeTruthy()
+  })
+
+  it('renders product page link', async () => {
+    mockUseQuery.mockReturnValue({
+      data: plateDetail,
+      isLoading: false,
+      isError: false,
+    } as ReturnType<typeof mockUseQuery>)
+
+    renderAtPath('/plates/plate-001')
+    expect(await screen.findByRole('link', { name: /view product page/i })).toBeTruthy()
   })
 
   it('renders manufacturer, well count, and material', async () => {

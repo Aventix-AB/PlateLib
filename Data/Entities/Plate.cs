@@ -9,6 +9,7 @@ public class Plate : SearchableEntity
     public required Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public required string CatalogNumber { get; set; }
+    public required string ProductUrl { get; set; }
     public int WellCount { get; set; }
 
     /// <summary>Object key in blob storage for the plate's thumbnail image. Null when no thumbnail has been uploaded.</summary>

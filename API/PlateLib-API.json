@@ -531,6 +531,7 @@
         "required": [
           "name",
           "catalogNumber",
+          "productUrl",
           "wellCount",
           "manufacturerId",
           "materialId",
@@ -542,6 +543,9 @@
             "type": "string"
           },
           "catalogNumber": {
+            "type": "string"
+          },
+          "productUrl": {
             "type": "string"
           },
           "wellCount": {

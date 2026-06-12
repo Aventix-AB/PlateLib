@@ -9,6 +9,7 @@ public static class CreatePlate
     public record CreatePlateRequest(
         string Name,
         string CatalogNumber,
+        string ProductUrl,
         int WellCount,
         Guid ManufacturerId,
         Guid MaterialId,
@@ -22,6 +23,11 @@ public static class CreatePlate
         {
             RuleFor(x => x.Name).NotEmpty().MaximumLength(200);
             RuleFor(x => x.CatalogNumber).NotEmpty().MaximumLength(100);
+            RuleFor(x => x.ProductUrl)
+                .NotEmpty()
+                .MaximumLength(1024)
+                .Must(url => Uri.TryCreate(url, UriKind.Absolute, out _))
+                .WithMessage("ProductUrl must be a valid absolute URL.");
             RuleFor(x => x.WellCount).GreaterThan(0);
             RuleFor(x => x.ManufacturerId).NotEmpty();
             RuleFor(x => x.MaterialId).NotEmpty();
@@ -67,6 +73,7 @@ public static class CreatePlate
             Id = Guid.NewGuid(),
             Name = request.Name,
             CatalogNumber = request.CatalogNumber,
+            ProductUrl = request.ProductUrl,
             WellCount = request.WellCount,
             ManufacturerId = request.ManufacturerId,
             MaterialId = request.MaterialId,
