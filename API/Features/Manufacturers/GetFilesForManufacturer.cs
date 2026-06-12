@@ -1,11 +1,10 @@
 using Microsoft.EntityFrameworkCore;
+using API.Features.Files;
 
 namespace API.Features.Manufacturers;
 
 public static class GetFilesForManufacturer
 {
-    public record StoredFileResponse(Guid Id, string FileName, string ContentType);
-
     public static IEndpointRouteBuilder MapGetFilesForManufacturer(this IEndpointRouteBuilder app)
     {
         app.MapGet("/api/manufacturers/{manufacturerId:guid}/files", Handle)
@@ -25,7 +24,7 @@ public static class GetFilesForManufacturer
         var files = await db.Files
             .Where(f => f.Manufacturers.Any(m => m.Id == manufacturerId))
             .OrderBy(f => f.FileName)
-            .Select(f => new StoredFileResponse(f.Id, f.FileName, f.ContentType))
+            .Select(f => new FileResponse(f.Id, f.FileName, f.ContentType))
             .ToListAsync(ct);
 
         return Results.Ok(files);

@@ -4,8 +4,6 @@ namespace API.Features.Files;
 
 public static class GetFilesForPlate
 {
-    public record StoredFileResponse(Guid Id, string FileName, string ContentType);
-
     public static IEndpointRouteBuilder MapGetFilesForPlate(this IEndpointRouteBuilder app)
     {
         app.MapGet("/api/plates/{plateId:guid}/files", Handle)
@@ -25,7 +23,7 @@ public static class GetFilesForPlate
         var files = await db.Files
             .Where(f => f.Plates.Any(p => p.Id == plateId))
             .OrderBy(f => f.FileName)
-            .Select(f => new StoredFileResponse(f.Id, f.FileName, f.ContentType))
+            .Select(f => new FileResponse(f.Id, f.FileName, f.ContentType))
             .ToListAsync(ct);
 
         return Results.Ok(files);
