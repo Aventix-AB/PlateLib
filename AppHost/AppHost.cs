@@ -30,4 +30,8 @@ var API = builder.AddProject<Projects.API>("api")
     .WithEnvironment("Storage__SecretKey", "minioadmin")
     .WithEnvironment("Storage__ForcePathStyle", "true");
 
+var Web = builder.AddViteApp("web", "../Web")
+    .WithPnpm();
+
+
 builder.Build().Run();
